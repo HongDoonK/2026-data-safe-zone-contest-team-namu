@@ -1,0 +1,7 @@
+print("disc>0 비율:", round((a[C_DISC] > 0).mean(), 3))
+print("app+disc=tot:", round((a[C_TOT] - a[C_APP] - a[C_DISC]).abs().le(1).mean(), 3))
+print("app=tot    :", round((a[C_TOT] - a[C_APP]).abs().le(1).mean(), 3))
+print("disc=tot   :", round((a[C_TOT] - a[C_DISC]).abs().le(1).mean(), 3))
+print(a[C_DISC].quantile([.1, .25, .5, .75, .9, .99]).to_string())
+print(a[C_TOT].quantile([.1, .25, .5, .75, .9, .99]).to_string())
+print(a.groupby(a[C_DISC] // 500 * 500).size().head(20).to_string())

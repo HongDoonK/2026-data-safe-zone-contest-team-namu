@@ -1,0 +1,7 @@
+*
+!.gitignore
+!README.md
+!SYNTHETIC_secondary_group.csv
+!SYNTHETIC_verify_stage0.py
+!SYNTHETIC_verify_stage1.py
+!SYNTHETIC_verify_final.py

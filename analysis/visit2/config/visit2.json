@@ -1,0 +1,54 @@
+{
+  "run_label": "visit2",
+  "paths": {
+    "pay":  "D:/data/INS_DAEGURO_PAY.csv",
+    "shop": "D:/data/INS_DAEGURO_SHOP.csv",
+    "out_root": "out"
+  },
+  "encoding_candidates": ["utf-8-sig", "utf-8", "cp949"],
+  "chunksize": 1000000,
+  "columns": {
+    "active": "en",
+    "en": {
+      "pay":  {"shop_id": "SHOP_ID", "cust_id": "CUST_ID", "pay_gbn": "PAY_GBN",
+               "card_pay_gbn": "CARD_PAY_GBN", "dest_pay_gbn": "DEST_PAY_GBN",
+               "app_time": "CARD_APP_TIME", "tot_amt": "TOT_AMT", "app_amt": "CARD_APP_AMT"},
+      "shop": {"shop_id": "SHOP_ID", "gungu": "GUNGU_NM", "dong": "DONG_NM",
+               "child_able": "CHILD_ABLE_YN", "good_able": "GOOD_ABLE_YN",
+               "store_status": "STORE_STATUS", "closed_at": "CLOSED_AT",
+               "service_closed": "SERVICE_CLOSED"}
+    },
+    "ko": {
+      "pay":  {"shop_id": "가맹점코드", "cust_id": "고객코드", "pay_gbn": "지급구분",
+               "card_pay_gbn": "카드결제_구분", "dest_pay_gbn": "현장결제_구분",
+               "app_time": "승인일시", "tot_amt": "합계금액", "app_amt": "승인금액"},
+      "shop": {"shop_id": "가맹점코드", "gungu": "군구명", "dong": "행정동명",
+               "child_able": "아동급식_가능_유무", "good_able": "착한매장_유무",
+               "store_status": "운영상태", "closed_at": "폐업일자",
+               "service_closed": "대구로_서비스상태"}
+    }
+  },
+  "meal_pay_values": ["<M1 값 목록을 보고 사람이 채운다>"],
+  "status_filter": {"mode": "all", "complete_values": ["완료"], "cancel_values": ["취소"]},
+  "period": {"start_ym": "202306", "end_ym": "202506"},
+  "regime": {
+    "mode": "month",
+    "month_map": {"1": "방학", "2": "방학", "8": "방학", "7": "전환", "12": "전환"},
+    "default": "학기",
+    "date_ranges": []
+  },
+  "suppression": {"n_min": 5, "shop_min": 3, "cust_min": 5, "zero_policy": "mask"},
+  "export": {
+    "max_axes": 3,
+    "time_only_axes_exception": false,
+    "split_axis": "R",
+    "night_bucket": {"enabled": true, "hours": [23, 0, 1, 2, 3, 4, 5], "label": "23-05"}
+  },
+  "reference_exports": {
+    "export_0911_month": "reference/export_0911_month.json",
+    "export_0911_week_hour": "reference/export_0911_week_hour.json"
+  },
+  "id_patterns": ["<현장에서 가맹점·고객 코드 샘플을 보고 정규식 입력>"],
+  "bootstrap": {"reps": 500, "seed": 20260918},
+  "publish_rule": {"count_share_thresholds": [0.9, 0.8, 0.7], "primary": 0.9}
+}

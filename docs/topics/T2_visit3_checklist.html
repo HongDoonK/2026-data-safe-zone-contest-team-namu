@@ -1,0 +1,523 @@
+<meta charset="utf-8">
+<title>T2 3차 방문 체크리스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #E8EBEF;
+    --paper: #FFFFFF;
+    --ink: #16202A;
+    --muted: #5B6573;
+    --rule: #CFD5DD;
+    --rule-strong: #16202A;
+    --accent: #1C4F9C;
+    --accent-soft: #E8EFFA;
+    --stop: #B42318;
+    --stop-soft: #FDECEA;
+    --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    --mono: "IBM Plex Mono", "D2Coding", Consolas, ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #0D1116;
+      --paper: #151B22;
+      --ink: #E4E9EF;
+      --muted: #9AA5B3;
+      --rule: #2B3440;
+      --rule-strong: #C9D1DB;
+      --accent: #8FB3F0;
+      --accent-soft: #1A283D;
+      --stop: #F19A90;
+      --stop-soft: #3A1C1A;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0D1116;
+    --paper: #151B22;
+    --ink: #E4E9EF;
+    --muted: #9AA5B3;
+    --rule: #2B3440;
+    --rule-strong: #C9D1DB;
+    --accent: #8FB3F0;
+    --accent-soft: #1A283D;
+    --stop: #F19A90;
+    --stop-soft: #3A1C1A;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 24px;
+    margin: 0;
+  }
+  .sheet {
+    max-width: 880px;
+    margin: 0 auto 24px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 26px 30px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  h1, h2 { margin: 0; text-wrap: balance; }
+  h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+  h2 {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--rule-strong);
+  }
+  h2 .sec { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  h2 .aside { font-size: 12px; font-weight: 500; color: var(--muted); }
+  p, ul, ol { margin: 0; }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 2.5px solid var(--rule-strong);
+    padding-bottom: 8px;
+  }
+  .eyebrow { font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; }
+  .side {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--rule-strong);
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  .rules {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 18px;
+    font-size: 12.5px;
+  }
+  .rules b { color: var(--accent); margin-right: 4px; }
+  .flow { font-family: var(--mono); font-weight: 600; }
+
+  .pre {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 18px;
+    font-size: 12.5px;
+  }
+
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; line-height: 1.45; }
+  table.run { min-width: 720px; }
+  th, td { text-align: left; vertical-align: top; padding: 5px 6px; border-bottom: 1px solid var(--rule); }
+  thead th {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+    border-bottom: 1.5px solid var(--rule-strong);
+  }
+  col.c-plan { width: 6%; }
+  col.c-real { width: 6%; }
+  col.c-cell { width: 11%; }
+  col.c-exp { width: 57%; }
+  col.c-diff { width: 20%; }
+  td.t { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.real { border-left: 1px dashed var(--rule); border-right: 1px dashed var(--rule); }
+  .cell {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 13px;
+    display: block;
+  }
+  .cell.ko { font-family: var(--sans); font-weight: 700; }
+  .meta { display: block; font-size: 11px; color: var(--muted); }
+  tr.mod td { border-top: 1.5px solid var(--rule-strong); }
+  tr.gate td { background: var(--accent-soft); }
+  tr.opt .cell { font-weight: 500; }
+  tr.cut td {
+    background: var(--stop-soft);
+    color: var(--stop);
+    font-weight: 600;
+    border-top: 2px solid var(--stop);
+  }
+  td.diff { font-size: 11.5px; color: var(--muted); }
+
+  .n { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  code { font-family: var(--mono); font-size: 0.9em; }
+  .names { display: block; font-family: var(--mono); font-size: 11px; line-height: 1.45; margin-top: 2px; }
+  .names em { font-family: var(--sans); font-style: normal; color: var(--muted); margin-right: 4px; }
+
+  .src {
+    display: inline-block;
+    font-size: 10px;
+    line-height: 1.3;
+    padding: 0 4px;
+    margin-left: 2px;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    white-space: nowrap;
+    vertical-align: 1px;
+  }
+  .src.p { border-style: dashed; }
+
+  .blank {
+    display: inline-block;
+    min-width: 3.2em;
+    height: 1.05em;
+    border-bottom: 1px solid var(--rule-strong);
+    vertical-align: -3px;
+    margin: 0 2px;
+  }
+  .blank.w { min-width: 5.2em; }
+  .blank.s { min-width: 1.8em; }
+  .box {
+    display: inline-block;
+    width: 0.78em;
+    height: 0.78em;
+    border: 1.3px solid var(--rule-strong);
+    vertical-align: -1px;
+    margin: 0 3px 0 6px;
+  }
+  .box:first-child { margin-left: 0; }
+
+  .notes { list-style: none; padding: 0; font-size: 12px; color: var(--muted); display: grid; gap: 2px; }
+  .notes b { color: var(--ink); }
+
+  .form {
+    border: 1.5px solid var(--rule-strong);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .callout { font-size: 12.5px; background: var(--accent-soft); padding: 6px 9px; }
+  .steps { padding-left: 1.3em; display: grid; gap: 5px; font-size: 12.5px; }
+  .order { font-size: 12.5px; }
+  table.verdict { font-size: 12.5px; }
+  table.verdict td:first-child { white-space: nowrap; font-weight: 700; width: 3.2em; }
+  table.verdict td:nth-child(2) { width: 40%; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .col { display: flex; flex-direction: column; gap: 12px; }
+  .block { display: flex; flex-direction: column; gap: 6px; }
+  .label { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.02em; }
+  .files { font-family: var(--mono); font-size: 11.5px; display: grid; gap: 1px; }
+  .checks { list-style: none; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+  .checks li { display: flex; gap: 2px; }
+  .checks li > .box { flex: none; margin-top: 4px; }
+  .bullets { padding-left: 1.1em; display: grid; gap: 3px; font-size: 12.5px; }
+  .warn { color: var(--stop); font-weight: 600; }
+  table.cut5 { font-size: 12.5px; }
+  table.cut5 td:first-child { font-family: var(--mono); white-space: nowrap; }
+  .foot { font-size: 11px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 6px; }
+
+  @media (max-width: 760px) {
+    .sheet { padding: 18px 16px; }
+    .rules, .pre, .grid2 { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @page { size: A4; margin: 9mm 10mm; }
+  @media print {
+    :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+      color-scheme: light;
+      --ground: #FFFFFF;
+      --paper: #FFFFFF;
+      --ink: #000000;
+      --muted: #3A3A3A;
+      --rule: #9A9A9A;
+      --rule-strong: #000000;
+      --accent: #000000;
+      --accent-soft: #EDEDED;
+      --stop: #000000;
+      --stop-soft: #DCDCDC;
+    }
+    body { background: #FFFFFF; padding: 0; font-size: 8pt; line-height: 1.32; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sheet { max-width: none; margin: 0; border: 0; padding: 0; gap: 6pt; }
+    .sheet + .sheet { break-before: page; }
+    .head { padding-bottom: 4pt; }
+    h1 { font-size: 12.5pt; }
+    h2 { font-size: 9pt; padding-bottom: 2pt; }
+    .eyebrow, .side { font-size: 7.4pt; }
+    .rules, .pre, .notes, .callout, .steps, .order, .checks, .bullets { font-size: 7.7pt; }
+    .rules, .pre { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2pt 12pt; }
+    .grid2 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 12pt; }
+    table, table.verdict, table.cut5 { font-size: 7.7pt; line-height: 1.3; }
+    table.run { min-width: 0; font-size: 7.4pt; }
+    th, td { padding: 1.6pt 3pt; }
+    thead th { font-size: 7pt; }
+    .cell { font-size: 8pt; }
+    .meta, td.diff, .src { font-size: 6.8pt; }
+    .names { font-size: 6.8pt; }
+    .files { font-size: 7.2pt; }
+    .foot { font-size: 6.8pt; }
+    tr { break-inside: avoid; }
+  }
+</style>
+
+<section class="sheet" aria-label="앞면: 실행">
+  <header class="head">
+    <div>
+      <p class="eyebrow">T2 아동급식카드 · 데이터안심구역 3차 방문 · 2026-09-29 ~ 10-02</p>
+      <h1>3차 방문 체크리스트</h1>
+    </div>
+    <span class="side">앞면 · 실행</span>
+  </header>
+
+  <ul class="rules">
+    <li><b>순서 고정</b><span class="flow">S1 → P0 → M4 → H5</span></li>
+    <li><b>컷오프</b>퇴실 90분 전(기본 14:00). 돌던 셀을 끊고 반출 신청으로 간다</li>
+    <li><b>14:00 컷오프일 때</b>시작 마감: S1 10:50, P0 11:00, M4 11:30, H5 13:00. 늦으면 뒷면 §5</li>
+    <li><b>현장 수치</b>모두 [잠정 — 반출 전]. 기대값 출처 <span class="src">2차 반출</span> = CONFIRMED, <span class="src p">2차 현장</span> = 잠정</li>
+  </ul>
+
+  <h2><span class="sec">§0</span>입실 전<span class="aside">셀 코드는 계획서 §2~§5 인쇄본에 있다. 이 장에는 코드가 없다</span></h2>
+  <ul class="pre">
+    <li><i class="box"></i>퇴실 <span class="blank s"></span>:<span class="blank s"></span> → 컷오프 <span class="blank s"></span>:<span class="blank s"></span> (기본 14:00)</li>
+    <li><i class="box"></i>동 이름 반출 <i class="box"></i>가능 <i class="box"></i>불가 → <b>불가면 대체 키(군구 + 번호) 셀이 계획서에 없다</b>. M1 전에 보고한다</li>
+    <li><i class="box"></i>단가: 2023~2025년 8,000원일 가능성이 높다(동구청 안내 2025-08), 2026년 10,000원. 기간 안에 단가 변경이 없으므로 <b>A4는 해당 없음</b></li>
+    <li><i class="box"></i>인쇄물: 계획서 §2~§5 + 이 장</li>
+  </ul>
+
+  <h2><span class="sec">§1</span>시간표와 셀별 확인값</h2>
+  <div class="tablewrap">
+    <table class="run">
+      <colgroup><col class="c-plan"><col class="c-real"><col class="c-cell"><col class="c-exp"><col class="c-diff"></colgroup>
+      <thead>
+        <tr><th>계획</th><th>실제</th><th>셀</th><th>기대 확인값</th><th>다르면</th></tr>
+      </thead>
+      <tbody>
+        <tr class="mod">
+          <td class="t">+0:00</td><td class="real"></td>
+          <td><span class="cell">S1</span><span class="meta">9줄</span></td>
+          <td>결제 파일 <span class="n">15</span>열, 가맹점 파일 <span class="n">8</span>열. 아래 이름이 <b>모두</b> 있어야 한다(* = 상수가 아니라 셀 안에 직접 적힌 이름).
+            <span class="names"><em>결제</em>SHOP_ID CUST_ID PAY_GBN CARD_PAY_GBN CARD_APP_TIME TOT_AMT CARD_APP_AMT CHILD_DISC_AMT *ETC_AMT *DISC_AMT *MILEAGE_AMT *PACK_DISC_AMT *SHOP_DISC_AMT *GOOD_DISC_AMT</span>
+            <span class="names"><em>가맹점</em>SHOP_ID *GUNGU_NM *DONG_NM *CHILD_ABLE_YN *STORE_STATUS *SERVICE_CLOSED</span></td>
+          <td class="diff">상수와 다르면 상수 줄을 고친다. *이름과 다르면 보고한다. 첫 이름 앞에 <code>\ufeff</code>가 붙으면 <code>ENC="utf-8-sig"</code>, 디코딩 오류면 <code>"cp949"</code></td>
+        </tr>
+        <tr class="mod">
+          <td class="t">+0:10</td><td class="real"></td>
+          <td><span class="cell">P1</span><span class="meta">13줄 · 1~2분</span></td>
+          <td><b>첫 표</b> 19행, n은 2차 m1과 같아야 한다: 아동급식카드 <span class="n">369,750</span>, 카드 <span class="n">2,274,201</span>, 대구로페이 <span class="n">1,946,477</span>, 행복페이 <span class="n">1,722,346</span><span class="src">2차 반출</span>. 아동급식카드 n_disc는 n의 대부분(75% 이상 예상)<span class="src p">2차 현장</span>.
+            <b>둘째 표</b>가 <code>Empty DataFrame</code>이거나 <b>ym 빈칸 줄 하나뿐</b>이면 A 쪽이다</td>
+          <td class="diff">n이 다르면 읽기 이상이다. 보고하고 계속한다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">P1b</span><span class="meta">1줄 · P1 바로 뒤</span></td>
+          <td>26행(빈 ym 줄 + 202306~202506). n 합 <span class="n">369,750</span><span class="src">2차 반출</span>(취소 포함). 달마다 n ≥ 2차 완료 건수(예: 202306 ≥ <span class="n">2,069</span>, 202401 ≥ <span class="n">32,001</span>). 2023-06~12의 n_disc가 거의 0인가 <i class="box"></i>예 <i class="box"></i>아니오. n_disc/n이 갑자기 0에 가까워지는 달 <span class="blank w"></span></td>
+          <td class="diff"><code>NameError: a</code>면 P1부터 다시 친다. A1 뒤에는 치지 않는다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">P2</span><span class="meta">6줄</span></td>
+          <td><b>첫 표</b>: 행복페이 202201~202307, 카드 202201~202506, 대구로페이 첫 달 <span class="blank w"></span>. R6은 202306이라 했지만 m1 월 수 계산상 202307일 수 있어 여기서 확정한다.
+            <b>둘째 표</b> 전 기간 방학 비중: 행복페이 <span class="n">≈0.337</span>, 카드 <span class="n">≈0.262</span>, 대구로페이 <span class="n">≈0.233</span><span class="src">2차 반출</span>. 연도별 균등 기준: 12개월 연도 <span class="n">25.0%</span>, 2023 행복페이(1~7월) <span class="n">28.6%</span></td>
+          <td class="diff">—</td>
+        </tr>
+        <tr class="opt">
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">P3</span><span class="meta">12줄 · P1이 애매할 때만</span></td>
+          <td>현금·모바일상품권·결제수단없음·아동급식카드 행은 <b>무시한다</b>(승인시각 빈 행 때문에 전 기간 계정이 섞인다). share가 유별난 코드 <span class="blank w"></span>. 이것만으로는 증거로 쓰지 않는다</td>
+          <td class="diff">—</td>
+        </tr>
+        <tr class="gate">
+          <td class="t">~+0:40</td><td class="real"></td>
+          <td><span class="cell ko">P0 판정</span></td>
+          <td>뒷면 §2를 채운다. <b>번복하지 않는다</b></td>
+          <td class="diff">—</td>
+        </tr>
+        <tr class="mod">
+          <td class="t">+0:40</td><td class="real"></td>
+          <td><span class="cell">M1</span><span class="meta">8줄</span></td>
+          <td><code>len(reg)</code> <span class="n">203~220</span>(2차 구별 법정동 합 203 + 결측 키), 가맹점 합 <span class="n">22,086</span><span class="src">2차 반출</span>, 빈 동 이름은 0보다 크게 나올 것<span class="src p">2차 현장</span></td>
+          <td class="diff">22,086이 아니면 보고한다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">M2</span><span class="meta">13줄 · 1~2분</span></td>
+          <td><span class="n">341,216</span>, 동 결측 <span class="n">0</span>, 동 수 <span class="blank"></span>(M1 동 수 이하)<span class="src">2차 반출</span></td>
+          <td class="diff">기록하고 계속한다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">M3</span><span class="meta">10줄 · 1~2분</span></td>
+          <td><span class="n">3,612,950 3,612,950</span>(두 수가 같아야 한다)<span class="src">2차 반출</span></td>
+          <td class="diff">기록하고 계속한다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">M4</span><span class="meta">9줄</span></td>
+          <td>칸 <span class="blank"></span>, 억제 <span class="blank"></span>, 억제 칸 1개인 동 <span class="blank"></span>(0이 아니어도 M5가 그 동의 합계를 가린다). 레짐 합은 출력 순서대로 방학 <span class="n">188,725</span> / 전환 <span class="n">47,615</span> / 학기 <span class="n">104,876</span><span class="src">2차 반출</span></td>
+          <td class="diff">기록한다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">M5</span><span class="meta">13줄</span></td>
+          <td>출력 <span class="blank"></span> 동 억제 / <span class="blank"></span>(뒤 수 = M1 동 수). <b>유효 억제 = 억제 − (M1 동 수 − M2 동 수) = <span class="blank"></span>, 1이면 안 된다</b>. 급식 0인 동은 regime 파일에 없어서 0으로 드러나므로 뺀다</td>
+          <td class="diff"><span class="warn">1이면</span> 이 파일은 반출 보류하고 보고한다</td>
+        </tr>
+        <tr>
+          <td class="t">~+2:10</td><td class="real"></td>
+          <td><span class="cell">M6</span><span class="meta">12줄</span></td>
+          <td>U2 대상 <span class="n">1,412</span><span class="src">2차 반출</span>(2차 m3과 같은 정의: 등록 Y, 기간 중 완료 결제 있음, 급식 0). 상태 교차표 합 = U2 대상. 영업 중·서비스 유지 <span class="blank"></span> / <span class="blank"></span> → 메모에 적는다</td>
+          <td class="diff">기록한다</td>
+        </tr>
+        <tr class="mod">
+          <td class="t">+2:10</td><td class="real"></td>
+          <td><span class="cell">A1</span><span class="meta">15줄 · 1~2분</span></td>
+          <td><span class="n">341,216</span>. describe에서 CHILD_DISC_AMT의 count는 341,216이다. 참고값(취소 포함 369,750행 기준)<span class="src p">2차 현장</span>: 평균 <span class="n">2,473</span>, 표준편차 <span class="n">1,483</span>, 25% <span class="n">1,500</span>, 50% <span class="n">2,500</span></td>
+          <td class="diff">기록한다</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">A2</span><span class="meta">7줄</span></td>
+          <td>disc>0 비율 <span class="blank"></span>(0.75 이상 예상)<span class="src p">2차 현장</span>. 1에 가까운 항등식 <i class="box"></i>app+disc=tot <i class="box"></i>app=tot <i class="box"></i>disc=tot <i class="box"></i>없음(없으면 "관계 불명"으로 적고 H5는 A3까지만). CHILD_DISC_AMT 75% 값 <span class="blank"></span>(V2: 2차의 7,500은 전사 오류로 의심). 참고(외부 자료): CHILD_DISC_AMT가 배달팁 지원액(2023년 전액, 2024년부터 최대 4,000원)이라면 app+disc=tot이 1에 가깝고 4,000원 구간에 몰린다</td>
+          <td class="diff">—</td>
+        </tr>
+        <tr>
+          <td class="t"></td><td class="real"></td>
+          <td><span class="cell">A3</span><span class="meta">9줄</span></td>
+          <td>30행 출력. 인덱스는 0부터 500 간격, 열은 n·n_cust·n_general. 급식·일반 봉우리 <i class="box"></i>같다 <i class="box"></i>다르다. 급식 봉우리 금액대 <span class="blank"></span>원(출력은 0~14,500원까지. 참고로 2023년 단가 8,000원은 8,000원 구간에 들어간다)</td>
+          <td class="diff">음수 구간이 있으면 기록한다</td>
+        </tr>
+        <tr class="opt">
+          <td class="t">~+3:10</td><td class="real"></td>
+          <td><span class="cell">A4</span><span class="meta">4줄 · 해당 없음(기간 중 단가 변경 없음)</span></td>
+          <td>월별 최다 구간이 단가 개정 시점과 맞물리는가 <i class="box"></i>예 <i class="box"></i>아니오</td>
+          <td class="diff">—</td>
+        </tr>
+        <tr class="cut">
+          <td class="t">컷오프</td><td class="real"></td>
+          <td><span class="cell ko">반출 신청</span></td>
+          <td>돌던 셀을 끊고 뒷면 §3으로 간다</td>
+          <td>최대 90분</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ul class="notes">
+    <li><b>H3는 계획서에 셀이 없다.</b> 시간이 남으면 H3를 하지 말고 반출 신청을 일찍 시작한다. <b><code>SettingWithCopyWarning</code></b>(P2·M2·A1)은 경고일 뿐이다. 확인값만 보고 넘어간다.</li>
+  </ul>
+</section>
+
+<section class="sheet" aria-label="뒷면: 판정과 반출">
+  <header class="head">
+    <div>
+      <p class="eyebrow">T2 아동급식카드 · 데이터안심구역 3차 방문</p>
+      <h1>판정 · 반출 · 오류</h1>
+    </div>
+    <span class="side">뒷면</span>
+  </header>
+
+  <h2><span class="sec">§2</span>P0 판정<span class="aside">결과를 보기 전에 고정한 규칙(D-014). 번복하지 않는다</span></h2>
+  <div class="form">
+    <p class="callout"><b>ym이 빈칸인 줄은 승인시각이 없는 행이다.</b> "2023-05 이전"에 넣지 않는다(P1 둘째 표, P2, P3 모두 해당).</p>
+    <ol class="steps">
+      <li>급식 외 코드의 CHILD_DISC_AMT>0(P1 첫 표): 가장 많은 코드 <span class="blank w"></span> <span class="blank"></span>건(그 코드 n의 <span class="blank s"></span>%) → <i class="box"></i>없음·드묾 <i class="box"></i>흔함</li>
+      <li>2023-05 이전 CHILD_DISC_AMT>0(P1 둘째 표): 값이 있는 달 <span class="blank s"></span> / 17개월(2022-01~2023-05), 주된 코드 <span class="blank w"></span></li>
+      <li>방학월(22-01·02·08, 23-01·02)에 늘었는가 <i class="box"></i>예 <i class="box"></i>아니오</li>
+      <li>행복페이 방학 비중(P2): 2022년 <span class="blank s"></span>%(카드 <span class="blank s"></span>%, 균등 25.0), 2023년 <span class="blank s"></span>%(카드 <span class="blank s"></span>%, 균등 28.6) → <i class="box"></i>두 해 모두 높다 <i class="box"></i>한 해만 높다(플랫폼 계절성) <i class="box"></i>높지 않다</li>
+      <li>급식 결제에 표지가 있었는가(P1b): 2023-06~12 급식 결제 중 CHILD_DISC_AMT>0 비율 <span class="blank s"></span>% → <i class="box"></i>있다 <i class="box"></i>거의 0이다(그 시기에는 표지가 기록되지 않았다)</li>
+    </ol>
+    <p class="order"><b>판정 순서.</b> 1이 "흔함"이거나 5가 "거의 0"이면 <b>C</b>다. 1은 확장 정의가 "CHILD_DISC_AMT>0 = 급식"을 전제하기 때문이고, 5는 표지가 없던 시기라 이전 기록을 판단할 수 없기 때문이다. 둘 다 아니면 2·3을 본다.</p>
+    <table class="verdict">
+      <tbody>
+        <tr><td><i class="box"></i>A</td><td>없거나 산발적</td><td>25개월 확정. 2023-06 제외 민감도를 병기한다</td></tr>
+        <tr><td><i class="box"></i>B</td><td>매월 반복되고 방학에 증가</td><td>주 분석은 25개월 유지, 확장판(2022-01~)은 기간 민감도로만 쓴다</td></tr>
+        <tr><td><i class="box"></i>C</td><td>의미 불명이거나 급식 외 코드에 흔함</td><td>A로 처리하고 한계에 명시한다</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="col">
+      <h2><span class="sec">§3</span>반출 신청<span class="aside">컷오프 후, 최대 90분</span></h2>
+      <div class="block">
+        <p class="label">파일</p>
+        <div class="files">
+          <span>EXPORT_m4_dong_regime.csv</span>
+          <span>EXPORT_m4_dong_total.csv</span>
+          <span>EXPORT_m4_u2_gungu_status.csv</span>
+          <span>EXPORT_m5_amount_hist.csv</span>
+          <span>filter_definition_v3.txt</span>
+        </div>
+      </div>
+      <div class="block">
+        <p class="label">반출 전 점검(사람이 눈으로) — 하나라도 걸리면 그 파일만 보류하고 보고한다. 나머지는 신청한다</p>
+        <ul class="checks">
+          <li><i class="box"></i><span>어느 파일에도 합계 행이 없다</span></li>
+          <li><i class="box"></i><span>regime: 억제 칸이 1개인 동은 total 파일에서 합계가 비어 있다(M5를 M4 다음에 같은 커널에서 돌렸다면 자동)</span></li>
+          <li><i class="box"></i><span>regime: 레짐별 빈 행 수 방학 <span class="blank s"></span> 전환 <span class="blank s"></span> 학기 <span class="blank s"></span>, <b>어느 것도 1이 아니다</b>(레짐 합계가 2차 month_group으로 이미 반출됐다)</span></li>
+          <li><i class="box"></i><span>total: 유효 억제 동이 1이 아니다(앞면 M5). shops 빈 행 수 <span class="blank s"></span>도 1이 아니다(가맹점 22,086·일반 3,612,950 합계가 이미 반출됐다)</span></li>
+          <li><i class="box"></i><span>u2: 빈 칸 수 <span class="blank s"></span>가 1이 아니다(합계 1,412가 2차 m3에 있다)</span></li>
+          <li><i class="box"></i><span>amount: 급식 n의 빈 칸 수 <span class="blank s"></span>가 1이 아니다(합계 341,216)</span></li>
+          <li><i class="box"></i><span>동 이름 반출 승인 여부와 파일 내용이 맞다</span></li>
+        </ul>
+      </div>
+      <div class="block">
+        <p class="label">메모 filter_definition_v3.txt에 적을 것</p>
+        <ul class="bullets">
+          <li>P0 판정 <i class="box"></i>A <i class="box"></i>B <i class="box"></i>C와 근거(§2의 1~5)</li>
+          <li>P1b에서 할인 비율이 0에 가까워진 달(있으면). 배달팁 지원이 끊긴 달일 수 있다</li>
+          <li>급식 정의 <code>PAY_GBN=아동급식카드</code> + <code>CARD_PAY_GBN=완료</code>, 중복 미제거(D-012). 기간 2023-06~2025-06</li>
+          <li>레짐: 방학 1·2·8월, 전환 7·12월, 나머지 학기. 동 키: 법정동(<code>GUNGU_NM|DONG_NM</code>)</li>
+          <li>억제: 건수&lt;5, 가맹점&lt;3, 고객&lt;5. 레짐 칸 1개만 억제된 동은 합계도 억제. 가맹점&lt;3인 동은 가맹점·등록·일반 열도 억제</li>
+          <li>앞면 셀별 확인값이 일치했는지 여부</li>
+          <li><b>반출 CSV에 들어가지 않는 수</b>: M6의 영업 중·서비스 유지 수, A2의 disc>0 비율·항등식 판정·분위수. 메모에 적지 않으면 기획서에 쓸 수 없다</li>
+          <li>메모의 수치도 억제한다. 5건 미만은 "5 미만"으로 적고, 최솟값·최댓값은 적지 않는다</li>
+        </ul>
+        <ul class="checks">
+          <li><i class="box"></i><span>신청할 때 메모가 반출물에 포함되는지 담당자에게 확인한다(2차 때 filter_definition.txt가 빠졌다)</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2><span class="sec">§4</span>오류가 나면</h2>
+      <ul class="bullets">
+        <li><b>보고 형식</b>: 셀 이름, 오류 마지막 줄, 셀의 몇 번째 줄에서 났는지</li>
+        <li><code>NameError</code>는 앞 셀을 돌리지 않았다는 뜻이다. 의존 관계: P1b·P2←P1, M2·M3←M1, M4←M2, M5←M1·M3·M4, M6←M1·M2·M3, A2~A4←A1</li>
+        <li><b>A1은 P1이 만든 <code>a</code>를 덮어쓴다.</b> A1 뒤에 P1b·P2를 다시 돌리려면 P1부터 돌린다</li>
+        <li><code>KeyError '이름'</code>이 나면 S1 출력과 대조해 그 이름만 고친다</li>
+        <li>M2·M3에서 <code>uniquely valued Index</code>가 나면 SHOP_ID가 중복됐다는 뜻이다. 보고한다</li>
+        <li>커널을 재시작했으면 S1을 돌린 뒤, 필요한 셀의 선행 셀만 다시 돌린다</li>
+      </ul>
+
+      <h2><span class="sec">§5</span>축소 경로<span class="aside">컷오프까지 남은 분석 시간 · 계획서 §7</span></h2>
+      <table class="cut5">
+        <thead><tr><th>남은 시간</th><th>버리는 것</th><th>지키는 것</th></tr></thead>
+        <tbody>
+          <tr><td>3시간</td><td>H3</td><td>P0 + M4 + H5</td></tr>
+          <tr><td>2시간</td><td>A4, M6</td><td>P0 + M1~M5 + A1~A3</td></tr>
+          <tr><td>1시간</td><td>M5</td><td><b>P0 판정 + 동×레짐 표(M1~M4)</b></td></tr>
+          <tr><td>30분</td><td>전부</td><td><b>P0 판정만</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="foot">근거: T2_visit3_plan.md(셀 코드는 바꾸지 않았다) · 기대값은 9_18 반출물 CSV에서 다시 계산해 대조했다 · 2026-09-29 작성 · 원본: docs/topics/T2_visit3_checklist.md</p>
+</section>

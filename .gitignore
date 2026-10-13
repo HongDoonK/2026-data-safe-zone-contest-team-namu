@@ -5,3 +5,17 @@
 *.xlsx
 *.csv
 *.parquet
+
+# V3 SYNTHETIC data, runtime logs and local caches (scripts remain reviewable)
+synthetic/visit3/data_SYNTHETIC/
+synthetic/visit3/out_SYNTHETIC/
+**/__pycache__/
+
+# 반출 노트북(센터 산출물), 밖 분석의 내부 산출물(억제 전 값 포함), 외부 원자료
+10_2_데이터분석결과물/
+9_18_데이터분석 결과물/
+analysis/outside/out/
+analysis/outside/out_SYNTHETIC/
+analysis/outside/fig/
+data_external/
+synthetic/visit4/v4_exports_SYNTHETIC/

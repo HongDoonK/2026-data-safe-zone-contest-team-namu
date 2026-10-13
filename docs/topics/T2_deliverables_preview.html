@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T2 결과물 미리보기</title>
+<style>
+:root{
+  color-scheme:light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --q100:#cde2fb; --q700:#0d366b;
+  --real:#0f6b3a; --real-bg:#e3f3e8; --frame:#6b5a00; --frame-bg:#fbf1c9; --scen:#5a3fb0; --scen-bg:#ece8fb;
+  --hatch:#d9d8d2;
+}
+@media (prefers-color-scheme:dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme:dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --real:#7fd9a0; --real-bg:#16301f; --frame:#f0d36a; --frame-bg:#332b0c; --scen:#b9a8ff; --scen-bg:#251d45;
+    --hatch:#3a3a37;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --real:#7fd9a0; --real-bg:#16301f; --frame:#f0d36a; --frame-bg:#332b0c; --scen:#b9a8ff; --scen-bg:#251d45;
+  --hatch:#3a3a37;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:20px;margin:48px 0 4px}
+h3{font-size:16px;margin:0 0 4px}
+p{margin:6px 0}
+.sub{color:var(--ink2)}
+.small{font-size:13px;color:var(--ink2)}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.b-real{color:var(--real);background:var(--real-bg)}
+.b-frame{color:var(--frame);background:var(--frame-bg)}
+.b-scen{color:var(--scen);background:var(--scen-bg)}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:20px;margin:16px 0}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0}
+.tile{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:14px 16px}
+.tile .v{font-size:28px;font-weight:650;line-height:1.2}
+.tile .l{font-size:13px;color:var(--ink2)}
+/* layers */
+.layers{display:grid;gap:10px;margin-top:16px}
+.layer{border-radius:12px;padding:14px 16px;border:1px solid var(--ring)}
+.layer.l1{background:var(--real-bg)}
+.layer.l2{background:var(--scen-bg)}
+.layer .q{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{background:var(--surface);border:1px solid var(--ring);border-radius:8px;padding:4px 10px;font-size:13px}
+.join{text-align:center;color:var(--ink2);font-size:13px}
+/* chart */
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.axis text{fill:var(--muted);font-size:11px}
+.tip{position:fixed;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--ring);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);display:none;z-index:10;min-width:140px}
+.tip b{font-weight:650}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink2);margin:4px 0 8px}
+details{margin-top:10px}
+summary{cursor:pointer;font-size:13px;color:var(--ink2)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}
+th,td{border-bottom:1px solid var(--grid);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--ink2);font-weight:600}
+table.wide{min-width:860px}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+/* frames (not yet exported) */
+.frame{border:2px dashed var(--axis);border-radius:10px;min-height:170px;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:var(--muted);font-size:13px;
+  background-image:repeating-linear-gradient(135deg,transparent 0 10px,color-mix(in srgb,var(--hatch) 35%,transparent) 10px 11px)}
+.frame strong{display:block;color:var(--ink2);font-size:14px;margin-bottom:4px}
+.m22{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;font-size:13px}
+.m22 .h{color:var(--ink2);font-weight:600;padding:6px;text-align:center}
+.m22 .c{border:2px dashed var(--axis);border-radius:8px;padding:10px;min-height:78px}
+.m22 .c.star{border-color:var(--frame)}
+.blank{display:inline-block;min-width:64px;border-bottom:2px solid var(--frame);color:var(--frame);font-weight:600;padding:0 4px;text-align:center}
+.blank.s{border-color:var(--scen);color:var(--scen)}
+.quote{border-left:3px solid var(--axis);padding:8px 14px;margin:10px 0;background:var(--surface);border-radius:0 8px 8px 0}
+.assume{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.assume .a{border:1px solid var(--ring);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.assume .a b{color:var(--scen)}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>T2 결과물 미리보기</h1>
+  <p class="sub">아동급식카드는 어디서 멈추는가 — 진단(저장소 설계) + 시나리오(팀 Notion 9/18 MCLP, 가정 층)</p>
+  <p class="small">2026-09-18 기준. 실제 수치는 1차 반출물(9_11)뿐이다. 나머지 칸은 <b>값을 넣지 않은 틀</b>이며, 어떤 결과가 나올지 예측하지 않는다.</p>
+  <div class="legend-row">
+    <span class="badge b-real">실데이터 · 1차 반출</span>
+    <span class="badge b-frame">틀 · 반출 후 채움</span>
+    <span class="badge b-scen">시나리오 · 가정 S1~S4 하에서만</span>
+  </div>
+</header>
+
+<h2>두 층 구조</h2>
+<p class="sub">본 결론은 관측한 것만으로 세우고, 모집 계산은 가정을 명시한 별도 층에 둔다.</p>
+<div class="layers">
+  <div class="layer l1">
+    <h3>층 1 · 진단 — 본 결론</h3>
+    <div class="q"><span class="chip">Q1 언제 — 급식카드 고유의 시간·계절 패턴</span><span class="chip">Q2 어디서 — 등록과 이용이 어긋나는 지역</span><span class="chip">Q3 무엇을 — 누가 무엇을 먼저 확인할까</span></div>
+  </div>
+  <div class="join">↓ 확인표의 "확인 결과 → 조치" 열에서만 연결 ↓</div>
+  <div class="layer l2">
+    <h3>층 2 · 시나리오 — 조건부 계산</h3>
+    <div class="q"><span class="chip">가정 S1~S4가 성립한다면, 모집 우선 후보 동은 어디인가 (co-visitation 생활권 + greedy MCLP)</span></div>
+  </div>
+</div>
+
+<!-- ================= Q1 ================= -->
+<h2>층 1 · Q1 언제</h2>
+<p class="sub">계절과 시간대. 일반 결제와의 비교는 2차 방문 반출 후에 붙는다.</p>
+
+<div class="tiles">
+  <div class="tile"><div class="l">급식카드 결제 건수</div><div class="v">339,713</div><div class="l">2023-06 ~ 2025-06 · 25개월</div></div>
+  <div class="tile"><div class="l">방학 월평균 이용 계정</div><div class="v">4.9배</div><div class="l">학기 779 → 방학 3,785</div></div>
+  <div class="tile"><div class="l">계정당 월 주문</div><div class="v">8.2 · 8.8</div><div class="l">방학 · 학기 — 거의 같음</div></div>
+  <div class="tile"><div class="l">17~19시 비중</div><div class="v">36.3%</div><div class="l">모든 요일 피크 18시</div></div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div><h3>P1 · 월별 급식카드 이용 계정 수</h3><p class="small">고유 고객코드 수. 계정 ≠ 아동.</p></div>
+    <span class="badge b-real">실데이터 · 1차 반출</span>
+  </div>
+  <div class="lg"><span><span class="sw" style="background:var(--s1)"></span>학기</span><span><span class="sw" style="background:var(--s2)"></span>방학 (1·2·8월)</span><span><span class="sw" style="background:var(--s3)"></span>전환 (7·12월)</span></div>
+  <div class="chart" id="p1"></div>
+  <p class="note">레짐 구분은 분석자 정의(월 단위 근사). 실제 대구 학사일정과의 대조 전.</p>
+  <details><summary>표로 보기</summary><div class="tbl-wrap" id="p1t"></div></details>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div><h3>P2 · 요일 × 시간 급식카드 결제 건수 (대구 전체, 전 기간)</h3><p class="small">학기·방학 합산. 심야 23~05시는 한 칸으로 합침.</p></div>
+    <span class="badge b-real">실데이터 · 1차 반출</span>
+  </div>
+  <div class="chart" id="p2"></div>
+  <div class="lg" id="p2lg"></div>
+  <p class="note">요일 표기 '와'는 반출 스크립트 오기이며 '화'로 교정해 표시. 심야(23~05시)는 억제 칸과 관측 0칸을 구별하지 않고 한 칸으로 합쳤다 — 1차 반출물의 요일×시 표를 그대로 실으면 합계 대조로 억제 칸 값이 복원되기 때문(방문 계획 §9 A1).</p>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div><h3>P3 · 급식 vs 일반 결제 시간 프로파일 + 가맹점 내 대조</h3><p class="small">3시간 구간 × 평일/주말 × 학기/방학. 급식−일반 비중 차와 가맹점 단위 부트스트랩 95% CI.</p></div>
+    <span class="badge b-frame">틀 · 2차 반출(V2-M2)</span>
+  </div>
+  <div class="frame"><div><strong>값 없음</strong>이 그림이 "급식카드 고유 패턴인가, 배달앱 일반 패턴인가"를 가른다.<br>어느 결과든 결론 문장이 있다 — 다르다 / 가게 구성 때문 / 같다</div></div>
+</div>
+
+<!-- ================= Q2 ================= -->
+<h2>층 1 · Q2 어디서</h2>
+<p class="sub">지역은 가맹점 소재지 기준. 건수가 아니라 같은 지역 일반 배달 대비 비중으로 본다.</p>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-head"><h3>P5 · 등록 × 이용 어긋남</h3><span class="badge b-frame">틀 · 2차(V2-M3)</span></div>
+    <div class="m22">
+      <div></div><div class="h">급식결제 있음</div><div class="h">급식결제 없음</div>
+      <div class="h" style="writing-mode:initial;align-self:center">등록 Y</div>
+      <div class="c">작동 관측</div>
+      <div class="c star">★ 등록 대비 이용 미관측<br><span class="small">→ U2 확인 대상</span></div>
+      <div class="h" style="align-self:center">등록 N</div>
+      <div class="c star">★ 등록 정보와 이용 불일치<br><span class="small">→ 명단 확인</span></div>
+      <div class="c">공급 없음<br><span class="small">→ U1 후보</span></div>
+    </div>
+    <p class="note">가게 수는 반출 후 채움. 3곳 미만 칸은 억제.</p>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>P6 · 공개 가능한 공간 단위</h3><span class="badge b-frame">틀 · 2차(V2-M4)</span></div>
+    <div class="tbl-wrap"><table>
+      <tr><th>단계</th><th>단위</th><th>기준 통과 건수 비중</th></tr>
+      <tr><td>L1</td><td>동 × 레짐 × 3시간</td><td><span class="blank">—</span></td></tr>
+      <tr><td>L2</td><td>동 × 레짐</td><td><span class="blank">—</span></td></tr>
+      <tr><td>L4</td><td>군구 × 레짐 × 3시간</td><td><span class="blank">—</span></td></tr>
+      <tr><td>L3</td><td>동 × 전 기간</td><td><span class="blank">—</span></td></tr>
+      <tr><td>L5</td><td>군구 × 레짐</td><td><span class="blank">—</span></td></tr>
+    </table></div>
+    <p class="note">90% 이상인 가장 세밀한 단계가 지도 단위. 볼 수 없는 단위로는 주장하지 않는다.</p>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-head"><h3>P7 · 급식결제 위치몫(LQ) 지도</h3><span class="badge b-frame">틀 · 3차</span></div>
+    <div class="frame"><div><strong>지도 — 방학 / 학기 두 장</strong>LQ = (지역 급식 비중) ÷ (대구 전체 급식 비중)<br>억제 지역은 회색 "집계 기준 미달"</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>P8 · 진단 유형 지도</h3><span class="badge b-frame">틀 · 3차</span></div>
+    <div class="frame"><div><strong>지도 — 관측 조건 유형</strong>U1 등록 없음 · U2 등록 대비 이용 미관측 · U3 배달 결과 확인(조건부) · U4 필요도 낮음 · U0 작동 관측</div></div>
+    <p class="note">원인 이름(유령 가맹점·공급 공백) 대신 관측 조건 이름. 분류는 억제 전 값으로, 공표는 억제 후.</p>
+  </div>
+</div>
+
+<!-- ================= Q3 ================= -->
+<h2>층 1 · Q3 무엇을</h2>
+<div class="card">
+  <div class="card-head">
+    <div><h3>P11 · 현장 확인 우선순위표</h3><p class="small">지자체가 실행하는 문서. 모집 수 대신 확인 순서와 확인 결과별 조치.</p></div>
+    <span class="badge b-frame">틀 · 4차</span>
+  </div>
+  <div class="tbl-wrap"><table class="wide">
+    <tr><th>지역</th><th>레짐·시간</th><th style="white-space:nowrap">유형</th><th>관측된 사실</th><th>먼저 확인할 질문</th><th>주체</th><th>확인 결과 → 조치</th><th>시나리오 순위</th></tr>
+    <tr><td><span class="blank">동</span></td><td><span class="blank">레짐·시간</span></td><td>U2</td><td><span class="blank">억제 적용 수치</span></td><td>등록 가게가 그 시간에 실제 영업·배달하는가? 등록 정보가 최신인가?</td><td>대구로 운영사 · 가게</td><td>영업함 → 이용 안내<br>영업 안 함 → 명단 정비</td><td><span class="blank s">가정 표기</span></td></tr>
+    <tr><td><span class="blank">동</span></td><td><span class="blank">레짐·시간</span></td><td>U1</td><td><span class="blank">억제 적용 수치</span></td><td>이 지역 가게들이 급식 가맹을 모르는가, 조건이 안 맞는가?</td><td>구청 급식 담당</td><td>모름 → 가맹 안내<br>가게 없음 → <b>모집 (시나리오 순위 참고)</b></td><td><span class="blank s">가정 표기</span></td></tr>
+  </table></div>
+  <p class="note">행의 유형·질문은 형식 예시다. 실제 지역·수치는 없다.</p>
+</div>
+
+<div class="card">
+  <h3>층 1 결론 문장 틀</h3>
+  <div class="quote">대구로에서 급식카드 결제는 <b>방학</b>과 <b>저녁 17~19시</b>에 집중된다. 이는 배달앱 일반 패턴과 <span class="blank">다르다/같다</span>. 지역으로는 <span class="blank">공개 단위</span> 기준 <span class="blank">U1·U2 지역 수</span>곳에서 등록 공급과 이용이 어긋나며, 이 지역들은 <span class="blank">확인 질문</span>을 <span class="blank">주체</span>가 먼저 확인할 대상이다.</div>
+  <p class="note">굵은 글씨 = 1차 반출로 확정. 밑줄 칸 = 반출 후 채움.</p>
+</div>
+
+<!-- ================= Layer 2 ================= -->
+<h2>층 2 · 시나리오 — 가정하면</h2>
+<p class="sub">팀 Notion 9/18 설계를 조건부 계산으로 둔다. 결과는 단일 숫자가 아니라 민감도 범위와 반복 선택된 동 목록으로 낸다.</p>
+
+<div class="card">
+  <div class="card-head"><h3>가정</h3><span class="badge b-scen">시나리오 · 가정 S1~S4</span></div>
+  <div class="assume">
+    <div class="a"><b>S1</b> 현재 등록 가게는 급식결제 시간대에 영업·배달한다<div class="note">깨짐: U2 확인에서 영업 안 함</div></div>
+    <div class="a"><b>S2</b> 두 동을 함께 이용한 고객 비율 ≥ τ 이면 배달이 닿는다<div class="note">깨짐: 이사·직장 주문, 대형 상권 편향</div></div>
+    <div class="a"><b>S3</b> 동의 수요 가중치 = 필요도 대리지표<div class="note">깨짐: KCB는 성인·2023Q4까지</div></div>
+    <div class="a"><b>S4</b> 급식 가게 1곳 이상이면 그 동과 인접 동이 커버된다<div class="note">깨짐: 가게 수용량·영업시간 한계</div></div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-head"><h3>P9 · 생활권 인접 검증</h3><span class="badge b-scen">틀 · 3차</span></div>
+    <div class="frame"><div><strong>co-visitation 인접 vs 지리 인접(SGIS 경계)</strong>일치율 표. LX 필지 데이터는 신청 31종에 없어 공개 경계로 대체</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>P10 · 민감도 격자</h3><span class="badge b-scen">틀 · 4차</span></div>
+    <div class="tbl-wrap"><table>
+      <tr><th>τ ↓ · P →</th><th>P₁</th><th>P₂</th><th>P₃</th></tr>
+      <tr><td>0.10</td><td><span class="blank s">—</span></td><td><span class="blank s">—</span></td><td><span class="blank s">—</span></td></tr>
+      <tr><td>0.15</td><td><span class="blank s">—</span></td><td><span class="blank s">—</span></td><td><span class="blank s">—</span></td></tr>
+      <tr><td>0.20</td><td><span class="blank s">—</span></td><td><span class="blank s">—</span></td><td><span class="blank s">—</span></td></tr>
+    </table></div>
+    <p class="note">칸 = 모델상 커버 지표 · 선택 동 집합 안정성(Jaccard). 모든 칸에서 반복 선택된 동만 확인표에 표기.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h3>층 2 결론 문장 틀</h3>
+  <div class="quote"><b>가정 S1~S4 하에서</b>, τ·P 전 격자에서 반복 선택된 모집 우선 후보 지역은 <span class="blank s">목록</span>이며, 모델상 커버 지표는 <span class="blank s">하한</span>~<span class="blank s">상한</span> 범위다. 이 값은 등록 가게의 실제 영업·배달 범위가 확인되지 않은 상태의 <b>조건부 계산</b>이다.</div>
+  <p class="note">쓰지 않는 문장: "15개 동에 2곳씩 모집하면 아이의 비율이 ○%에서 ○%로" — 모델은 '동'을 고를 뿐 '몇 곳'을 계산하지 않고, 계정은 아동이 아니다.</p>
+</div>
+
+<!-- ================= status ================= -->
+<h2>확보 현황</h2>
+<div class="card"><div class="tbl-wrap"><table>
+  <tr><th>ID</th><th>산출물</th><th>층</th><th>시점</th><th>상태</th></tr>
+  <tr><td>P1</td><td>월별 이용 계정 (레짐)</td><td>1 · 언제</td><td>1차</td><td><span class="badge b-real">확보</span></td></tr>
+  <tr><td>P2</td><td>요일×시간 히트맵</td><td>1 · 언제</td><td>1차</td><td><span class="badge b-real">확보</span></td></tr>
+  <tr><td>P3</td><td>급식 vs 일반 프로파일 + CI</td><td>1 · 언제</td><td>2차</td><td><span class="badge b-frame">틀</span></td></tr>
+  <tr><td>P4</td><td>월별 급식 비중 s_t</td><td>1 · 언제</td><td>2차</td><td><span class="badge b-frame">틀</span></td></tr>
+  <tr><td>P5</td><td>등록 × 이용 2×2</td><td>1 · 어디서</td><td>2차</td><td><span class="badge b-frame">틀</span></td></tr>
+  <tr><td>P6</td><td>공개 가능 단위 사다리</td><td>1 · 어디서</td><td>2차</td><td><span class="badge b-frame">틀</span></td></tr>
+  <tr><td>P7</td><td>LQ 지도</td><td>1 · 어디서</td><td>3차</td><td><span class="badge b-frame">틀</span></td></tr>
+  <tr><td>P8</td><td>진단 유형 지도</td><td>1 · 어디서</td><td>3차</td><td><span class="badge b-frame">틀</span></td></tr>
+  <tr><td>P9</td><td>생활권 인접 검증</td><td>2</td><td>3차</td><td><span class="badge b-scen">틀</span></td></tr>
+  <tr><td>P10</td><td>시나리오 민감도 격자</td><td>2</td><td>4차</td><td><span class="badge b-scen">틀</span></td></tr>
+  <tr><td>P11</td><td>현장 확인 우선순위표</td><td>1 + 2</td><td>4차</td><td><span class="badge b-frame">틀</span></td></tr>
+</table></div></div>
+<p class="small">출처: 경북대학교 첨단기술원(원 제공 인성데이타㈜) 대구로 결제 정보, 데이터안심구역 1차 반출(2026-09-11). 상세 논리: docs/topics/T2_integrated_logic.md</p>
+</main>
+
+<div class="tip" id="tip"></div>
+<script>
+const MONTH = [{"ym": "2023-06", "n": 2063, "shop": 1149, "cust": 319}, {"ym": "2023-07", "n": 9706, "shop": 3494, "cust": 2076}, {"ym": "2023-08", "n": 19144, "shop": 4571, "cust": 2647}, {"ym": "2023-09", "n": 4686, "shop": 2055, "cust": 593}, {"ym": "2023-10", "n": 5081, "shop": 2190, "cust": 615}, {"ym": "2023-11", "n": 5161, "shop": 2185, "cust": 621}, {"ym": "2023-12", "n": 8592, "shop": 3209, "cust": 1681}, {"ym": "2024-01", "n": 31867, "shop": 5401, "cust": 3647}, {"ym": "2024-02", "n": 31168, "shop": 5392, "cust": 3818}, {"ym": "2024-03", "n": 6820, "shop": 2643, "cust": 764}, {"ym": "2024-04", "n": 6829, "shop": 2660, "cust": 766}, {"ym": "2024-05", "n": 7508, "shop": 2760, "cust": 802}, {"ym": "2024-06", "n": 7610, "shop": 2712, "cust": 816}, {"ym": "2024-07", "n": 18016, "shop": 4311, "cust": 3332}, {"ym": "2024-08", "n": 27430, "shop": 4840, "cust": 3777}, {"ym": "2024-09", "n": 8088, "shop": 2658, "cust": 862}, {"ym": "2024-10", "n": 8450, "shop": 2767, "cust": 892}, {"ym": "2024-11", "n": 8057, "shop": 2662, "cust": 893}, {"ym": "2024-12", "n": 11146, "shop": 3305, "cust": 2150}, {"ym": "2025-01", "n": 38015, "shop": 5123, "cust": 4306}, {"ym": "2025-02", "n": 40421, "shop": 5220, "cust": 4517}, {"ym": "2025-03", "n": 8416, "shop": 2824, "cust": 989}, {"ym": "2025-04", "n": 8056, "shop": 2694, "cust": 895}, {"ym": "2025-05", "n": 8885, "shop": 2811, "cust": 923}, {"ym": "2025-06", "n": 8498, "shop": 2708, "cust": 935}];
+const WH = [{"dow": "금", "hour": 0, "n": null}, {"dow": "금", "hour": 3, "n": null}, {"dow": "금", "hour": 6, "n": 98}, {"dow": "금", "hour": 7, "n": 105}, {"dow": "금", "hour": 8, "n": 263}, {"dow": "금", "hour": 9, "n": 527}, {"dow": "금", "hour": 10, "n": 1550}, {"dow": "금", "hour": 11, "n": 3921}, {"dow": "금", "hour": 12, "n": 4004}, {"dow": "금", "hour": 13, "n": 2823}, {"dow": "금", "hour": 14, "n": 2244}, {"dow": "금", "hour": 15, "n": 2415}, {"dow": "금", "hour": 16, "n": 3313}, {"dow": "금", "hour": 17, "n": 5615}, {"dow": "금", "hour": 18, "n": 6818}, {"dow": "금", "hour": 19, "n": 5960}, {"dow": "금", "hour": 20, "n": 4111}, {"dow": "금", "hour": 21, "n": 3150}, {"dow": "금", "hour": 22, "n": 2645}, {"dow": "금", "hour": 23, "n": null}, {"dow": "목", "hour": 6, "n": 123}, {"dow": "목", "hour": 7, "n": 101}, {"dow": "목", "hour": 8, "n": 237}, {"dow": "목", "hour": 9, "n": 547}, {"dow": "목", "hour": 10, "n": 1642}, {"dow": "목", "hour": 11, "n": 3954}, {"dow": "목", "hour": 12, "n": 4041}, {"dow": "목", "hour": 13, "n": 3016}, {"dow": "목", "hour": 14, "n": 2404}, {"dow": "목", "hour": 15, "n": 2277}, {"dow": "목", "hour": 16, "n": 3568}, {"dow": "목", "hour": 17, "n": 5844}, {"dow": "목", "hour": 18, "n": 6974}, {"dow": "목", "hour": 19, "n": 5539}, {"dow": "목", "hour": 20, "n": 3802}, {"dow": "목", "hour": 21, "n": 2595}, {"dow": "목", "hour": 22, "n": 1996}, {"dow": "수", "hour": 6, "n": 95}, {"dow": "수", "hour": 7, "n": 102}, {"dow": "수", "hour": 8, "n": 257}, {"dow": "수", "hour": 9, "n": 475}, {"dow": "수", "hour": 10, "n": 1392}, {"dow": "수", "hour": 11, "n": 3571}, {"dow": "수", "hour": 12, "n": 3731}, {"dow": "수", "hour": 13, "n": 2829}, {"dow": "수", "hour": 14, "n": 2277}, {"dow": "수", "hour": 15, "n": 2496}, {"dow": "수", "hour": 16, "n": 3239}, {"dow": "수", "hour": 17, "n": 5685}, {"dow": "수", "hour": 18, "n": 6700}, {"dow": "수", "hour": 19, "n": 5449}, {"dow": "수", "hour": 20, "n": 3701}, {"dow": "수", "hour": 21, "n": 2578}, {"dow": "수", "hour": 22, "n": 1969}, {"dow": "와", "hour": 0, "n": null}, {"dow": "와", "hour": 6, "n": 117}, {"dow": "와", "hour": 7, "n": 76}, {"dow": "와", "hour": 8, "n": 223}, {"dow": "와", "hour": 9, "n": 524}, {"dow": "와", "hour": 10, "n": 1501}, {"dow": "와", "hour": 11, "n": 3674}, {"dow": "와", "hour": 12, "n": 3776}, {"dow": "와", "hour": 13, "n": 2756}, {"dow": "와", "hour": 14, "n": 2190}, {"dow": "와", "hour": 15, "n": 2238}, {"dow": "와", "hour": 16, "n": 3309}, {"dow": "와", "hour": 17, "n": 5358}, {"dow": "와", "hour": 18, "n": 6619}, {"dow": "와", "hour": 19, "n": 5355}, {"dow": "와", "hour": 20, "n": 3497}, {"dow": "와", "hour": 21, "n": 2493}, {"dow": "와", "hour": 22, "n": 2028}, {"dow": "월", "hour": 0, "n": null}, {"dow": "월", "hour": 2, "n": null}, {"dow": "월", "hour": 6, "n": 96}, {"dow": "월", "hour": 7, "n": 87}, {"dow": "월", "hour": 8, "n": 219}, {"dow": "월", "hour": 9, "n": 485}, {"dow": "월", "hour": 10, "n": 1471}, {"dow": "월", "hour": 11, "n": 3483}, {"dow": "월", "hour": 12, "n": 3656}, {"dow": "월", "hour": 13, "n": 2846}, {"dow": "월", "hour": 14, "n": 2338}, {"dow": "월", "hour": 15, "n": 2358}, {"dow": "월", "hour": 16, "n": 3335}, {"dow": "월", "hour": 17, "n": 5300}, {"dow": "월", "hour": 18, "n": 6256}, {"dow": "월", "hour": 19, "n": 5256}, {"dow": "월", "hour": 20, "n": 3350}, {"dow": "월", "hour": 21, "n": 2437}, {"dow": "월", "hour": 22, "n": 1847}, {"dow": "일", "hour": 0, "n": null}, {"dow": "일", "hour": 3, "n": null}, {"dow": "일", "hour": 6, "n": 115}, {"dow": "일", "hour": 7, "n": 101}, {"dow": "일", "hour": 8, "n": 301}, {"dow": "일", "hour": 9, "n": 795}, {"dow": "일", "hour": 10, "n": 2012}, {"dow": "일", "hour": 11, "n": 4010}, {"dow": "일", "hour": 12, "n": 4503}, {"dow": "일", "hour": 13, "n": 4071}, {"dow": "일", "hour": 14, "n": 3311}, {"dow": "일", "hour": 15, "n": 3040}, {"dow": "일", "hour": 16, "n": 3612}, {"dow": "일", "hour": 17, "n": 5740}, {"dow": "일", "hour": 18, "n": 6528}, {"dow": "일", "hour": 19, "n": 5079}, {"dow": "일", "hour": 20, "n": 3536}, {"dow": "일", "hour": 21, "n": 2381}, {"dow": "일", "hour": 22, "n": 1821}, {"dow": "토", "hour": 0, "n": null}, {"dow": "토", "hour": 2, "n": null}, {"dow": "토", "hour": 6, "n": 88}, {"dow": "토", "hour": 7, "n": 125}, {"dow": "토", "hour": 8, "n": 378}, {"dow": "토", "hour": 9, "n": 894}, {"dow": "토", "hour": 10, "n": 2212}, {"dow": "토", "hour": 11, "n": 4367}, {"dow": "토", "hour": 12, "n": 4842}, {"dow": "토", "hour": 13, "n": 4175}, {"dow": "토", "hour": 14, "n": 3414}, {"dow": "토", "hour": 15, "n": 2987}, {"dow": "토", "hour": 16, "n": 3407}, {"dow": "토", "hour": 17, "n": 5157}, {"dow": "토", "hour": 18, "n": 6391}, {"dow": "토", "hour": 19, "n": 5545}, {"dow": "토", "hour": 20, "n": 4028}, {"dow": "토", "hour": 21, "n": 3025}, {"dow": "토", "hour": 22, "n": 2389}];
+const DOW = ["월","화","수","목","금","토","일"];
+const DOWFIX = {"와":"화"};
+const fmt = n => n.toLocaleString("ko-KR");
+const tip = document.getElementById("tip");
+function showTip(e, html){ tip.innerHTML = html; tip.style.display="block"; moveTip(e); }
+function moveTip(e){ const pad=14; let x=e.clientX+pad, y=e.clientY+pad; const r=tip.getBoundingClientRect(); if(x+r.width>innerWidth-8) x=e.clientX-r.width-pad; if(y+r.height>innerHeight-8) y=e.clientY-r.height-pad; tip.style.left=x+"px"; tip.style.top=y+"px"; }
+function hideTip(){ tip.style.display="none"; }
+const NS="http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){ const n=document.createElementNS(NS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); if(parent) parent.appendChild(n); return n; }
+function regime(ym){ const m=+ym.slice(5); if([1,2,8].includes(m)) return ["방학","var(--s2)"]; if([7,12].includes(m)) return ["전환","var(--s3)"]; return ["학기","var(--s1)"]; }
+
+/* ---------- P1 bars ---------- */
+(function(){
+  const box=document.getElementById("p1");
+  const W=960,H=300,m={t:12,r:12,b:44,l:52};
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"월별 급식카드 이용 계정 수 막대 그래프"},box);
+  const max=5000, iw=W-m.l-m.r, ih=H-m.t-m.b, n=MONTH.length, bw=iw/n, gap=2;
+  const y=v=>m.t+ih-(v/max)*ih;
+  const g=el("g",{class:"axis"},svg);
+  for(let v=0;v<=max;v+=1000){ el("line",{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:v?"var(--grid)":"var(--axis)","stroke-width":1},g); const t=el("text",{x:m.l-8,y:y(v)+4,"text-anchor":"end"},g); t.textContent=fmt(v); }
+  MONTH.forEach((d,i)=>{
+    const [rg,col]=regime(d.ym); const x=m.l+i*bw+gap/2, w=bw-gap, top=y(d.cust), h=m.t+ih-top;
+    const r=Math.min(4,w/2);
+    el("path",{d:`M${x},${m.t+ih} V${top+r} Q${x},${top} ${x+r},${top} H${x+w-r} Q${x+w},${top} ${x+w},${top+r} V${m.t+ih} Z`,fill:col},svg);
+    const hit=el("rect",{x:m.l+i*bw,y:m.t,width:bw,height:ih,fill:"transparent"},svg);
+    hit.addEventListener("mousemove",e=>showTip(e,`<b>${d.ym}</b> · ${rg}<br>이용 계정 ${fmt(d.cust)}<br>결제 ${fmt(d.n)}건 · 가게 ${fmt(d.shop)}`));
+    hit.addEventListener("mouseleave",hideTip);
+    if(d.ym.endsWith("-01")||i===0||i===n-1){ const t=el("text",{x:m.l+i*bw+bw/2,y:H-m.b+16,"text-anchor":"middle"},g); t.textContent=d.ym.slice(2).replace("-","."); }
+  });
+  const peak=MONTH.reduce((a,b)=>b.cust>a.cust?b:a); const pi=MONTH.indexOf(peak);
+  const lt=el("text",{x:m.l+pi*bw+bw/2,y:y(peak.cust)-6,"text-anchor":"middle",fill:"var(--ink2)","font-size":11},svg); lt.textContent=fmt(peak.cust);
+  const yl=el("text",{x:m.l,y:H-6,fill:"var(--muted)","font-size":11},svg); yl.textContent="연.월 (01 = 1월)";
+  // table
+  let h='<table><tr><th>월</th><th>구분</th><th class="num">결제</th><th class="num">가게</th><th class="num">계정</th></tr>';
+  MONTH.forEach(d=>{ h+=`<tr><td>${d.ym}</td><td>${regime(d.ym)[0]}</td><td class="num">${fmt(d.n)}</td><td class="num">${fmt(d.shop)}</td><td class="num">${fmt(d.cust)}</td></tr>`; });
+  document.getElementById("p1t").innerHTML=h+"</table>";
+})();
+
+/* ---------- P2 heatmap (심야 23~05시 합침) ---------- */
+(function(){
+  const box=document.getElementById("p2");
+  const NIGHT=[23,0,1,2,3,4,5];
+  const COLS=[...Array.from({length:17},(_,i)=>i+6), "23-05"];   // 06..22 + 심야
+  const cell={};
+  WH.forEach(r=>{ const d=DOWFIX[r.dow]||r.dow; if(NIGHT.includes(r.hour)) return; cell[d+"|"+r.hour]=r.n; });
+  const W=960,H=250,m={t:8,r:8,b:26,l:30};
+  const iw=W-m.l-m.r, ih=H-m.t-m.b, cw=iw/COLS.length, ch=ih/7, gap=2;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"요일 시간별 급식카드 결제 건수 히트맵, 심야 23시부터 5시는 한 칸으로 합침"},box);
+  const defs=el("defs",{},svg);
+  const pat=el("pattern",{id:"hatch",width:6,height:6,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"},defs);
+  el("rect",{width:6,height:6,fill:"var(--surface)"},pat); el("line",{x1:0,y1:0,x2:0,y2:6,stroke:"var(--muted)","stroke-width":1.5},pat);
+  let maxN=0; Object.values(cell).forEach(v=>{ if(v!=null) maxN=Math.max(maxN,v); });
+  const RAMP=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
+  const step=v=>Math.min(RAMP.length-1,Math.floor((v/maxN)*RAMP.length));
+  const g=el("g",{class:"axis"},svg);
+  DOW.forEach((d,ri)=>{ const t=el("text",{x:m.l-8,y:m.t+ri*ch+ch/2+4,"text-anchor":"end"},g); t.textContent=d; });
+  COLS.forEach((c,ci)=>{ if(typeof c==="number" && c%3!==0) return; const t=el("text",{x:m.l+ci*cw+cw/2,y:H-8,"text-anchor":"middle"},g); t.textContent= typeof c==="number" ? c+"시" : "심야"; });
+  DOW.forEach((d,ri)=>{ COLS.forEach((c,ci)=>{
+    const x=m.l+ci*cw+gap/2, y=m.t+ri*ch+gap/2, w=cw-gap, hh=ch-gap;
+    let attrs={x,y,width:w,height:hh,rx:3}, label, title;
+    if(c==="23-05"){ attrs.fill="url(#hatch)"; title=`${d}요일 23~05시`; label="소수 (집계 기준 미달)"; }
+    else { const v=cell[d+"|"+c]; attrs.fill=RAMP[step(v)]; title=`${d}요일 ${c}시`; label=`${fmt(v)}건`; }
+    const r=el("rect",attrs,svg);
+    r.addEventListener("mousemove",e=>showTip(e,`<b>${title}</b><br>${label}`));
+    r.addEventListener("mouseleave",hideTip);
+  });});
+  const lg=document.getElementById("p2lg");
+  const cut=i=>fmt(Math.round(maxN*i/RAMP.length));
+  lg.innerHTML=RAMP.map((c,i)=>`<span><span class="sw" style="background:${c}"></span>${cut(i)}–${cut(i+1)}건</span>`).join("")+
+   `<span><span class="sw" style="background:repeating-linear-gradient(45deg,var(--muted) 0 1.5px,var(--surface) 1.5px 4px)"></span>심야 23~05시 · 소수</span>`;
+})();
+</script>
+</body>
+</html>

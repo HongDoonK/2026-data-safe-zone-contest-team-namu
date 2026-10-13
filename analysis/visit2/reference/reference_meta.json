@@ -1,0 +1,31 @@
+{
+  "export_0911_month": {
+    "keys": [
+      "ym"
+    ],
+    "metrics": [
+      "n",
+      "n_shop",
+      "n_cust"
+    ],
+    "population": "0911_unknown",
+    "zero_policy": "absent_row",
+    "time_only": true,
+    "night_bucket_applied": false
+  },
+  "export_0911_week_hour": {
+    "keys": [
+      "dow",
+      "hour"
+    ],
+    "metrics": [
+      "n",
+      "n_shop",
+      "n_cust"
+    ],
+    "population": "0911_unknown",
+    "zero_policy": "absent_row",
+    "time_only": true,
+    "night_bucket_applied": false
+  }
+}
