@@ -445,7 +445,7 @@ open("filter_definition_v4.txt", "w", encoding="utf-8").write(memo)
 ## 12. 방문 직후 (반출 대기 3일 동안 밖에서)
 
 1. MCLP 골격을 지금 있는 자료(아동 수, 경계 거리)로 먼저 짠다. 반출이 오면 공급(Q1 `meal_vac_live`)·수요(KCB 보정)·커버 범위(Q3 흐름)를 갈아 끼운다.
-2. 반출물 도착 시 `T2_export_10xx_results.md` 작성, 판정표(1순위 × 이유 7개)를 [T2_reason_rules.md](T2_reason_rules.md)(D-019) 규칙대로 채우기. 규칙은 반출물을 보기 전에 고정했으므로 바꾸지 않는다.
+2. 반출물 도착 시 `T2_export_10xx_results.md` 작성, 판정표(1순위 × 이유 7개)를 [T2_reason_rules.md](T2_reason_rules.md)(D-019) 규칙대로 채우기. 규칙은 반출물을 보기 전에 고정했으므로 바꾸지 않는다. 실행은 `python -X utf8 analysis/outside/90_reason_table.py --v4 <반출 폴더> --app <앱 점검.csv>`(§8).
 3. 기획서 30쪽 작성(W4~W5).
 
 ## Status

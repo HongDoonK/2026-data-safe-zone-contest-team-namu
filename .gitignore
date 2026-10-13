@@ -15,7 +15,7 @@ synthetic/visit3/out_SYNTHETIC/
 10_2_데이터분석결과물/
 9_18_데이터분석 결과물/
 analysis/outside/out/
-analysis/outside/out_SYNTHETIC/
+analysis/outside/out_*/
 analysis/outside/fig/
 data_external/
 synthetic/visit4/v4_exports_SYNTHETIC/
