@@ -4,6 +4,7 @@
 파일 형식은 4차 계획(docs/topics/T2_visit4_plan.md)의 저장 셀(Q4b, Q1b, K2, Q3c, S6b, Q7)과 억제 규칙을 따른다.
   --kcb8            KCB EMD_CD를 8자리로
   --drop a,b        빼고 만들 파일(예: shinhan,delivery,app)
+  --nonY            Q1에 nonY_live 열(2026-10-15 계획 추가)을 넣는다. 별도 난수열이라 다른 파일·열 값은 그대로다.
 """
 import argparse
 from pathlib import Path
@@ -18,6 +19,7 @@ ap.add_argument("--out", default=str(Path(__file__).resolve().parent / "v4_expor
 ap.add_argument("--kcb8", action="store_true")
 ap.add_argument("--drop", default="")
 ap.add_argument("--seed", type=int, default=7)
+ap.add_argument("--nonY", action="store_true", help="Q1에 nonY_live 열(10/15 추가)을 넣는다")
 A = ap.parse_args()
 OUT = Path(A.out)
 OUT.mkdir(parents=True, exist_ok=True)
@@ -50,6 +52,9 @@ q["meal_vac_shop"] = np.round(able * rng.uniform(0.2, 0.7, len(b)))
 q["meal_vac_live"] = np.round(q.meal_vac_shop * rng.uniform(0.7, 0.95, len(b)))
 q["meal_vac10_live"] = np.round(q.meal_vac_live * rng.uniform(0.15, 0.6, len(b)))
 q["u2_live"] = np.round(q.able_live * rng.uniform(0, 0.1, len(b)))
+if A.nonY:   # 10/15 추가 열. 다른 열의 난수가 바뀌지 않게 별도 난수열을 쓴다(기존 폴더와 나머지 값 동일)
+    rng_ny = np.random.default_rng(A.seed + 1015)
+    q["nonY_live"] = np.round((b.shops.fillna(0) - b.able_y.fillna(0)).clip(lower=0).values * rng_ny.uniform(0.05, 0.4, len(b)))
 q.index.name = "dong"
 q[q < 3] = np.nan
 q.to_csv(OUT / "EXPORT_v4_dong_shop_state.csv", encoding="utf-8-sig")

@@ -1,0 +1,28 @@
+<section id="s28" data-transition="fade" style="background:#F3F5FF;color:#16181D;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<svg aria-label="" style="position:absolute;right:72px;top:36px;width:88px;height:88px" width="88" height="88" viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#6C86FF"/><circle cx="64" cy="24" r="22" fill="#6C86FF"/><circle cx="24" cy="64" r="22" fill="#6C86FF"/><circle cx="64" cy="64" r="22" fill="#6C86FF"/><rect x="24" y="24" width="40" height="40" fill="#6C86FF"/></svg>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="align-self:start;font-size:24px;font-weight:700;color:#0B3B2C;background:linear-gradient(90deg, #2FE0A8, #86E37A);border-radius:999px;padding:8px 26px">증빙 ④ 판정 코드</p>
+<h2 style="font-family:'Black Han Sans', 'Noto Sans KR', sans-serif;font-size:56px;font-weight:400;line-height:1.2;color:#16181D">가려진 칸이 있어도 판정한다: 두 끝으로 두 번</h2>
+</div>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EDF3;background:#24262D;border-radius:20px;padding:24px 28px">def judge_one(x, hit, ok, bad):<br>&#160;&#160;&#160;&#160;if pd.isna(x):<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return "?자료"<br>&#160;&#160;&#160;&#160;if bad == "low":<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return "●" if x &lt;= hit else ("○" if x &gt;= ok else "?경계")<br><br>def merge2(a, b, conflict="?억제"):<br>&#160;&#160;&#160;&#160;return a if a == b else conflict&#160;&#160;# 두 판정이 같을 때만 확정 (요약)</p>
+<div style="display:flex;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;box-shadow:0 12px 32px rgba(40,52,120,0.10);border-radius:24px;padding:28px">
+<h3 style="font-size:28px;font-weight:700;color:#3557F0">① 문턱</h3>
+<p style="font-size:24px;line-height:1.45">대구 분포의 하위 25%면 해당, 중앙값 반대편이면 아님</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;box-shadow:0 12px 32px rgba(40,52,120,0.10);border-radius:24px;padding:28px">
+<h3 style="font-size:28px;font-weight:700;color:#3557F0">② 가린 칸</h3>
+<p style="font-size:24px;line-height:1.45">0과 (가림 문턱 − 1)로 채워 두 번 판정</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;box-shadow:0 12px 32px rgba(40,52,120,0.10);border-radius:24px;padding:28px">
+<h3 style="font-size:28px;font-weight:700;color:#3557F0">③ 확정</h3>
+<p style="font-size:24px;line-height:1.45">두 판정이 같을 때만. 다르면 ‘판단 불가’</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;box-shadow:0 12px 32px rgba(40,52,120,0.10);border-radius:24px;padding:28px">
+<h3 style="font-size:28px;font-weight:700;color:#3557F0">④ 묶기</h3>
+<p style="font-size:24px;line-height:1.45">착시 제외 → 처방 확정 → 잔여 추정 → 미확정</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5F6773">analysis/outside/90_reason_table.py · 규칙 D-019 · 28</p>
+<aside>증빙 4: 판정 코드의 핵심. 반출 자료에는 작은 칸이 가려져 있다. 가린 칸을 가장 불리한 값과 가장 유리한 값으로 채워 두 번 판정하고, 두 판정이 같을 때만 확정한다. 판정이 끝나면 착시를 먼저 빼고, 처방 확정, 잔여 추정, 미확정 순서로 묶는다.</aside>
+</section>

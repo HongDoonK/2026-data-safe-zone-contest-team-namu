@@ -24,10 +24,10 @@ IN = HERE / "out"                                   # 밖 분석 내부 산출�
 BD = ROOT / "data_external" / "boundary"
 POPDIR = ROOT / "data_external" / "population_dong"
 Q, K, MIN_CHILD = 0.25, 3, 300                      # G2·G3, D-015
-PRICE = {"달성군": (9000,)}                          # R4 1끼 단가. 확인 안 된 구는 두 값으로 두 번 판정
-PRICE_DEFAULT = (8000, 9000)
+PRICE = {}                                          # R4 1끼 단가(구별 예외). 기록표 '단가' 시트 값이 우선
+PRICE_DEFAULT = (10000,)                            # 2026년 대구 공통 1만 원(대구시청 복지과 문의 2026-10-15) — 앱 화면과 같은 시점
 REACH_P = 0.7                                       # R3: 같은 단위 가게로 간 급식 비율 >= 0.7 이면 '단위 안'
-R4_HIT, R4_OK, R4_MIN = 0.20, 0.05, 3
+R4_HIT, R4_OK, R4_MIN, R4_TOP = 0.20, 0.05, 3, 10
 R7_MIN = 20
 OUTER = {"하빈면", "가창면", "검단동", "안심2동", "공산동", "파동"}   # D-018 외곽 6단위
 SH_CNT = None                                       # 신한 건수 열 이름(현장 F1 확인 후). None이면 CNT·건수가 든 첫 열
@@ -38,6 +38,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--v4")
 ap.add_argument("--app")
 ap.add_argument("--centers")
+ap.add_argument("--shops")                           # 가게별 급식카드 최소주문 면제 표(가게, 급식카드_최소주문_면제 Y/N/모름)
 ap.add_argument("--tag", default="")
 ap.add_argument("--selftest", action="store_true")
 A = ap.parse_args()
@@ -281,33 +282,91 @@ else:
     R["R3"], R["R3_sub"] = "?자료", ""
 
 # ---- R4 한도 안에서 시킬 게 없음: 앱 점검, 같은 구 대조 동과 비교 (법정동) ---------------------------------
-R["R4"], R["R4_tip"], R["R4_n_open"] = "?자료", "?자료", np.nan
+R["R4"], R["R4_tip"], R["R4_list"], R["R4_n_open"], R["R4_note"] = "?자료", "?자료", "?자료", np.nan, ""
 if A.app:
-    ap_ = pd.read_csv(A.app)
+    # 기록표(95_app_check_sheet.py의 xlsx: '기록'·'단가' 시트) 또는 같은 열의 CSV
+    xl = A.app.lower().endswith(".xlsx")
+    ap_ = pd.read_excel(A.app, sheet_name="기록") if xl else pd.read_csv(A.app)
+    if xl:
+        pr = pd.read_excel(A.app, sheet_name="단가").dropna(subset=["1끼 단가(원)"])
+        PRICE.update({g.strip(): (int(p),) for g, p in zip(pr["구"], pr["1끼 단가(원)"])})
+    ap_ = ap_[ap_["역할"].isin(["대상", "대조"])].copy()                 # 예시 줄 제외
+    for c in ["최소주문금액", "배달팁"]:
+        ap_[c] = pd.to_numeric(ap_[c], errors="coerce")
+    filled = ap_["가게"].notna() | ap_["최소주문금액"].notna()            # 미리 깔린 빈 줄 제외
+    half = filled & ap_["최소주문금액"].isna()
+    P(f"\n[R4] 앱 점검 {A.app}: 기록 {int(filled.sum())}줄, 최소주문금액 빠진 줄 {int(half.sum())}(제외), "
+      f"단가 {dict((g, PRICE.get(g, PRICE_DEFAULT)) for g in sorted(ap_['구'].str.strip().unique()))}")
+    ap_ = ap_[filled & ~half]
+    # 점검 방식(2026-10-15): 1인분 목록에서 '아동급식' 표시가 확인된 가게만, 목록 위에서부터 R4_TOP곳
+    if "급식카드 표시" in ap_:
+        card = ap_["급식카드 표시"].astype(str).str.strip().str.upper()
+        P(f"  급식카드 표시 N {int((card == 'N').sum())}줄·모름 {int((card == '모름').sum())}줄 제외")
+        ap_ = ap_[~card.isin(["N", "모름"])]
+    if "순서" in ap_:
+        ap_ = ap_.sort_values(["구", "동", "순서"]).groupby(["구", "동"]).head(R4_TOP)
     ap_["key"] = ap_["구"].str.strip() + "|" + ap_["동"].str.strip()
     ap_ = ap_[ap_["영업중"].astype(str).str.strip().str.upper().isin(["Y", "예", "O", "1", "TRUE"])]
+    # 급식카드 결제 시 최소주문금액을 면제하는 가게가 있다(팀 앱 점검 중 확인, 2026-10-15).
+    # 기준 = 급식카드 결제 기준 최소주문(면제 가게는 0). 면제 여부를 모르는 가게는 면제/아님 두 경우로 판정해 같을 때만 확정(G4 방식).
+    # 가게 상세 화면: "최소주문금액 11,000원 (아동급식카드로 주문 시 미적용)". 면제여도 메뉴 하나는 사야 하므로
+    # 급식카드로 시킬 수 있는 최소 금액 = 면제면 대표메뉴 최저가, 아니면 max(최소주문, 대표메뉴 최저가).
+    WAIVE, MENU = {}, {}
+    if A.shops:
+        ws = pd.read_csv(A.shops)
+        nm = ws["가게"].astype(str).str.strip()
+        WAIVE = dict(zip(nm, ws["급식카드_최소주문_면제"].astype(str).str.strip().str.upper()))
+        if "대표메뉴_최저가" in ws:
+            MENU = dict(zip(nm, pd.to_numeric(ws["대표메뉴_최저가"], errors="coerce")))
+        P(f"  가게 표: {len(WAIVE)}곳 중 면제 Y {sum(v == 'Y' for v in WAIVE.values())}, N {sum(v == 'N' for v in WAIVE.values())}, "
+          f"대표메뉴 최저가 확인 {sum(pd.notna(v) for v in MENU.values())}")
+
+    def eff_min(df, scen):
+        """scen 'N' = 가장 불리한 끝(모르는 칸을 불리하게), 'Y' = 가장 유리한 끝, 'LIST' = 목록 금액 그대로(개정 전)."""
+        mo = df["최소주문금액"]
+        if scen == "LIST":
+            return mo
+        nm = df["가게"].astype(str).str.strip()
+        w, menu = nm.map(WAIVE).fillna("모름"), nm.map(MENU).astype(float)
+        hi = np.where(w == "Y", menu.fillna(mo), np.maximum(mo, menu.fillna(0)))
+        lo = np.where(w == "N", np.maximum(mo, menu.fillna(0)), menu.fillna(0))
+        return pd.Series(hi if scen == "N" else lo, index=df.index)
+
+    def r4_one(g, c, price, tip, scen):
+        gm = eff_min(g, scen) + (g["배달팁"].fillna(0) if tip else 0)
+        a4, p4 = int((gm <= price).sum()), int((gm <= price).sum()) / len(g)
+        cm = ((eff_min(c, scen) + (c["배달팁"].fillna(0) if tip else 0)) <= price).groupby(c["key"]).mean().mean() if len(c) else np.nan
+        if pd.isna(cm):
+            return "●" if a4 < R4_MIN else "?자료"
+        return "●" if (p4 <= cm - R4_HIT or a4 < R4_MIN) else ("○" if (p4 >= cm - R4_OK and a4 >= R4_MIN) else "?경계")
+
+    def r4(g, c, gu, tip, scens):
+        vs = []
+        for price in PRICE.get(gu, PRICE_DEFAULT):
+            v = [r4_one(g, c, price, tip, sc) for sc in scens]
+            vs.append(v[0] if len(v) == 1 else merge2(v[0], v[1], "?면제"))
+        return vs[0] if len(vs) == 1 else merge2(vs[0], vs[1], "?단가")
+
     for key, g in ap_.groupby("key"):
         if not (g["역할"] == "대상").any() or key not in R.index:
             continue
         gu = key.split("|")[0]
-        vs, vt = [], []
-        for price in PRICE.get(gu, PRICE_DEFAULT):
-            for col, out in [(g["최소주문금액"], vs), (g["최소주문금액"] + g["배달팁"].fillna(0), vt)]:
-                a4 = int((col <= price).sum())
-                c = ap_[(ap_["역할"] == "대조") & (ap_["구"].str.strip() == gu)]
-                cm = c.assign(ok=(c["최소주문금액"] if out is vs else c["최소주문금액"] + c["배달팁"].fillna(0)) <= price) \
-                    .groupby("key").ok.mean().mean()
-                p4 = a4 / len(g)
-                if pd.isna(cm):
-                    out.append("●" if a4 < R4_MIN else "?자료")
-                else:
-                    out.append("●" if (p4 <= cm - R4_HIT or a4 < R4_MIN) else
-                               ("○" if (p4 >= cm - R4_OK and a4 >= R4_MIN) else "?경계"))
-        R.loc[key, "R4"] = vs[0] if len(vs) == 1 else merge2(vs[0], vs[1], "?단가")
-        R.loc[key, "R4_tip"] = vt[0] if len(vt) == 1 else merge2(vt[0], vt[1], "?단가")
+        c = ap_[(ap_["역할"] == "대조") & (ap_["구"].str.strip() == gu)]
+        R.loc[key, "R4"] = r4(g, c, gu, False, ["N", "Y"])
+        R.loc[key, "R4_tip"] = r4(g, c, gu, True, ["N", "Y"])
+        R.loc[key, "R4_list"] = r4(g, c, gu, False, ["LIST"])          # 목록 표시 최소주문 그대로(개정 전 방식, 참고)
         R.loc[key, "R4_n_open"] = len(g)
+        # 해석 주석(판정은 바꾸지 않음): 같은 구 대조 동 중 하나라도 대상 동만큼(또는 더) 1끼 가능 가게가 적으면,
+        # 평균 이상 쓰는 동네도 같은 장벽을 가진 것 → 대상 동이 덜 쓰는 이유로는 약하다 → 지역 공통 장벽으로 표시
+        # (2026-10-15 일반화: 처음엔 'A4 < 3'일 때만 표시. 면제 반영 후 화원 대상·구라리가 같은 목록 3곳으로 같아져 넓힘)
+        p0 = PRICE.get(gu, PRICE_DEFAULT)[0]
+        c_p4 = (eff_min(c, "N") <= p0).groupby(c["key"]).mean()
+        t_p4 = float((eff_min(g, "N") <= p0).mean())
+        if str(R.loc[key, "R4"]) in ("●", "?면제", "?경계") and (c_p4 <= t_p4 + R4_OK).any():
+            R.loc[key, "R4_note"] = "같은 구 대조 동도 1끼 가능 가게가 대상만큼 적음 — 지역 공통 장벽"
 
-# ---- R5 배달 여건: 5a 신한 배달 ÷ 총인구 (단위), 5c 취소율·배달 시간 (법정동) -----------------------------
+# ---- R5 배달 여건: 5a 배달 시장 ÷ 총인구 (단위), 5c 취소율·배달 시간·배달팁 (법정동) -------------------------
+# 2026-10-15 개정(4차 전): 4차에 신한 배달매출이 제공되지 않는다 → 5a는 대구로 일반 배달 결제(25개월)로 대신한다(대리).
 sh, parts = files["shinhan_delivery_umd_month"], {}
 if sh is not None:
     cnt = SH_CNT or next(c for c in sh.columns if re.search("CNT|건수|COUNT", c, re.I))
@@ -326,14 +385,26 @@ if sh is not None:
         r5b = (u.gen / ((lo + hi) / 2 * upop / 1000)).reindex(u.index)
         weak = r5b.reindex(UP).quantile(Q)
         R["R3_note"] = b.unit_id.map(r5b <= weak).map({True: "대구로 약세", False: ""})
+else:
+    a5 = (u.gen / upop * 1000).reindex(u.index)                     # 대구로 일반 배달 결제 ÷ 총인구 1천 명(25개월 합)
+    v, thr["R5a"] = judge(a5, a5, UP, "low")
+    parts["5a"] = to_dong(v)
+    R["R5a_val"] = b.unit_id.map(a5)
+    P("\n[R5a] 신한 자료 없음 → 대구로 일반 배달 결제 ÷ 총인구(대리)로 판정")
 dg = files["dong_delivery"]
 if dg is not None:
     dg = dg.set_index("dong")
     canc, mins = (dg.n_cancel / dg.n).reindex(b.index), (dg.mins_sum / dg.mins_n).reindex(b.index)
     vc, thr["R5c_cancel"] = judge(canc, canc, DP, "high")
     vm, thr["R5c_mins"] = judge(mins, mins, DP, "high")
-    parts["5c"] = pd.Series({k: "●" if "●" in (vc[k], vm[k]) else
-                             ("○" if (vc[k], vm[k]) == ("○", "○") else merge2(vc[k], vm[k], "?경계")) for k in b.index})
+    vs5 = [vc, vm]
+    if "tip_sum" in dg:                                               # 배달팁 평균(4차 Q7에 추가, 2026-10-15)
+        tip = (dg.tip_sum / dg.tip_n).reindex(b.index)
+        vt5, thr["R5c_tip"] = judge(tip, tip, DP, "high")
+        vs5.append(vt5)
+    parts["5c"] = pd.Series({k: "●" if "●" in [v_[k] for v_ in vs5] else
+                             ("○" if all(v_[k] == "○" for v_ in vs5) else next(v_[k] for v_ in vs5 if v_[k] != "○"))
+                             for k in b.index})
 
 
 def r5(k):
@@ -388,11 +459,11 @@ def classify(r):
     if r.R3 == "●":
         rx.append(f"공급형({r.R3_sub if isinstance(r.R3_sub, str) and r.R3_sub else '미정'})")
     if r.R4 == "●":
-        rx.append("가격형")
+        rx.append("가격형(지역 공통)" if r.R4_note else "가격형")
     if r.R5 == "●":
         rx.append("배달형" if rx else "배달형(부분)")
     if rx:
-        return "처방 확정: " + "·".join(rx), "·".join(dict.fromkeys(w for x in rx for w in WHO[x].split("·"))), ",".join(hits)
+        return "처방 확정: " + "·".join(rx), "·".join(dict.fromkeys(w for x in rx for w in WHO.get(x, WHO.get(x.split("(")[0], "")).split("·"))), ",".join(hits)
     if all(r[x] == "○" for x in ["R1", "R3", "R4", "R5", "R7"]):
         return "잔여 추정: 안내·신청" + (" · 다른 경로 가능성" if r.R2 == "△" else ""), "구청", ""
     miss = [x for x in ["R1", "R3", "R4", "R5", "R7"] if str(r[x]).startswith("?")]

@@ -1,0 +1,13 @@
+<section id="s26" data-transition="fade" style="background:#F3F5FF;color:#16181D;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<svg aria-label="" style="position:absolute;right:72px;top:36px;width:88px;height:88px" width="88" height="88" viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#6C86FF"/><circle cx="64" cy="24" r="22" fill="#6C86FF"/><circle cx="24" cy="64" r="22" fill="#6C86FF"/><circle cx="64" cy="64" r="22" fill="#6C86FF"/><rect x="24" y="24" width="40" height="40" fill="#6C86FF"/></svg>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="align-self:start;font-size:24px;font-weight:700;color:#0B3B2C;background:linear-gradient(90deg, #2FE0A8, #86E37A);border-radius:999px;padding:8px 26px">증빙 ② 분석 코드 — 센터 안</p>
+<h2 style="font-family:'Black Han Sans', 'Noto Sans KR', sans-serif;font-size:56px;font-weight:400;line-height:1.2;color:#16181D">급식 결제 정의와 반출 전 가림 점검 (발췌)</h2>
+</div>
+<p style="font-size:26px;font-weight:700;color:#16181D">급식 결제 정의 (셀 M2)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EDF3;background:#24262D;border-radius:20px;padding:24px 28px">for ch in pd.read_csv(PAY, usecols=[...], dtype=str, chunksize=1000000):<br>&#160;&#160;&#160;&#160;ch = ch.apply(lambda s: s.str.strip())<br>&#160;&#160;&#160;&#160;mr.append(ch[(ch[C_GBN].isin(MEAL)) &amp; (ch[C_STAT] == DONE)])<br>m = pd.concat(mr)<br>m = m[(m.ym &gt;= "202306") &amp; (m.ym &lt;= "202506")]</p>
+<p style="font-size:26px;font-weight:700;color:#16181D">반출 전 가림 (셀 Q4b)과 자동 점검 (셀 X1)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EDF3;background:#24262D;border-radius:20px;padding:24px 28px">gd[gd &lt; 5] = np.nan<br>gd.loc[gd.isna().any(axis=1)] = np.nan&#160;&#160;# 한 칸이라도 가리면 그 동 전체<br>for f in sorted(glob.glob("EXPORT_v4_*.csv")):<br>&#160;&#160;&#160;&#160;e = pd.read_csv(f, encoding="utf-8-sig")<br>&#160;&#160;&#160;&#160;low = int((e[cols or list(e.columns[1:])] &lt; lim).sum().sum())<br>&#160;&#160;&#160;&#160;print("통과" if low == 0 else "※ 억제 누락", low, f, e.shape)</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5F6773">전체 셀 26개: 4차 방문 입력 코드 인쇄본 · 각 반출 노트북 함께 제출 · 26</p>
+<aside>증빙 2: 센터 안에서 실행한 코드 발췌. 급식 결제 정의와, 반출 전에 작은 칸을 가리고 저장 파일을 다시 읽어 가림 누락을 점검하는 코드다.</aside>
+</section>
