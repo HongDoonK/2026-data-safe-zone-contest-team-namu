@@ -184,19 +184,23 @@ print(int(qd.isna().sum().sum()), "칸 억제 /", qd.size)
 
 ## 4. 2순위 — KCB 소득 (Q2, 40분)
 
-### 셀 K1 — 읽고 값 확인 (8줄)
+### 셀 K1 — 읽고 값 확인 (11줄) · 10/16 현장 수정: 열 이름이 한글
 
 ```python
 KENC = "utf-8"
 k = pd.read_csv(KCB, dtype=str, encoding=KENC, keep_default_na=False).apply(lambda s: s.str.strip())
-print(k.shape, k.columns.tolist())
+print(k.shape)
+EN = ["BS_YR_QT", "RES_COM_CD", "EMD_CD", "SEX_CD", "AGE_CD"] + [f"C{i}_CNT" for i in range(1, 23)]
+for ko, en in zip(k.columns, EN):
+    print(ko, "→", en)
+k.columns = EN
 k = k[k.EMD_CD.str.startswith("27")]
 print(len(k), k.EMD_CD.str.len().value_counts().to_dict(), k.EMD_CD.nunique())
 print(k.BS_YR_QT.value_counts().sort_index().tail(6).to_string())
 print(k.RES_COM_CD.value_counts().to_string())
 print(k.AGE_CD.value_counts().to_string())
 ```
-**확인**: `KENC`는 F1에서 읽힌 인코딩. 열 이름이 `BS_YR_QT RES_COM_CD EMD_CD SEX_CD AGE_CD C1_CNT … C22_CNT`인지 본다(정의서 기준). 다르면 아래 셀의 이름을 고친다. 대구 행정동 수는 **약 140~160개**(군위군 포함 여부에 따라). `EMD_CD` 길이(8 또는 10)와 **마지막 분기 값**을 받아 적는다.
+**확인**: `KENC`는 F1에서 읽힌 인코딩. 실제 파일은 열 이름이 한글이라(10/16 현장: `기준시점 거주기준 행정동코드 성별 연령대 월환산소득1백만원이하대상자수 …`, 정의서 한글명과 띄어쓰기·성/성별·연령/연령대가 다름) 이름이 아니라 **순서**(정의서와 같음, 모두 27열)대로 영어 이름을 붙인다. 화살표 27줄이 순서대로 맞는지 본다. 열 수가 27이 아니면 `Length mismatch` 오류가 나며, 그때는 열 목록을 적어 와서 고친다. 대구 행정동 수는 **약 140~160개**(군위군 포함 여부에 따라). `EMD_CD` 길이(8 또는 10)와 **마지막 분기 값**을 받아 적는다.
 
 ### 셀 K2 — 행정동 × 연령대 소득 구간 저장 (11줄)
 
@@ -454,7 +458,7 @@ CHK = {"dong_regime_general": (["방학", "전환", "학기"], 5),
        "dong_delivery": (["n"], 5)}
 for f in sorted(glob.glob("EXPORT_v4_*.csv")):
     e = pd.read_csv(f, encoding="utf-8-sig")
-    cols, lim = [v for key, v in CHK.items() if key in f][0]
+    cols, lim = next((v for key, v in CHK.items() if key in f), (None, 5))
     low = int((e[cols or list(e.columns[1:])] < lim).sum().sum())
     print("통과" if low == 0 else "※ 억제 누락", low, f, e.shape)
 ```
@@ -491,7 +495,7 @@ open("filter_definition_v4.txt", "w", encoding="utf-8").write(memo)
 | `EXPORT_v4_dong_delivery.csv` (4순위) | 가게 동별 배달 건수·취소·소요 시간·배달팁 합 | 건수<5면 행 전체 |
 | `EXPORT_v4_top_vac_custage.csv` (선택) | 1순위 대 나머지 × 급식 계정 명의자 연령대 | 열에 5 미만이 있으면 그 열 전체 |
 | `filter_definition_v4.txt` | 정의·억제·현장 확인값 | — |
-| 노트북 | 반출 시 함께 나간다. 최댓값·상위 분위수·개별 계정 출력이 없는지 눈으로 확인 | — |
+| 노트북 | 반출 시 함께 나간다. 최댓값·상위 분위수·개별 계정 출력이 없는지 눈으로 확인. **F1(원자료 3행), Q5c(구간 합), Q9b·Q10(억제 전 표), 현장에서 덧붙인 확인 셀의 출력은 지우고 저장** (10/16 추가) | — |
 
 ---
 
@@ -545,6 +549,7 @@ open("filter_definition_v4.txt", "w", encoding="utf-8").write(memo)
 3. 기획서 30쪽 작성(W4~W5).
 
 ## Status
+- 2026-10-16 **현장 실행.** KCB 열 이름이 한글(`기준시점 거주기준 행정동코드 성별 연령대 월환산소득…`)이라 K1에서 순서대로 영어 이름을 붙임. EMD_CD는 8자리(예 46820380). X1의 키 조회 줄을 "못 찾으면 (None, 5)"로 바꿈(top_vac 3개 파일이 CHK 키와 안 맞아 멈췄음). **X1 전 파일 통과.** 반출 전 노트북에서 F1·Q5c·Q9b·Q10 출력을 지우도록 패키지 표에 추가(억제 전 표가 출력에 남음 — 설계 누락).
 - 2026-10-15 밤 **4차 제공 목록 확정**(대구로 6종 + KCB, 신한 없음): Q6(S6·S6b) 삭제, Q7을 4순위로 올리고 배달팁 열 추가(Q7b 분리), F1을 KCB·배달·고객으로, Q10(계정 명의자 연령대, 선택) 추가, X1·X2·패키지·축소·기대값 갱신. 판정 R5a는 대구로 일반 배달 결제 ÷ 인구로 대신(D-019 개정).
 - 2026-10-15 Q9(1순위 17곳 목록 손입력 → 1순위 대 나머지 하루 최대 결제·시간대) 추가. R4 단가 1만 원(대구광역시청 복지과, 대구 공통) 반영해 Q5c 구간에 1만·2만·3만 경계 추가.
 - 2026-10-15 **추가 3개**(방문 전날): Q1b `nonY_live`(MCLP 모집 상한), Q8 방학 앞·뒤 반기(1순위 재현성), Q5c 계정별 방학 하루 최대 결제 × 구(이유 4·6). X1·X2·반출 패키지·축소 경로·기대값 갱신. SYNTHETIC 재점검은 아래 줄.

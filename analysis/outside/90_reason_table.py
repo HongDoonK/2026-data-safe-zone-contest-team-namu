@@ -30,6 +30,9 @@ REACH_P = 0.7                                       # R3: 같은 단위 가게�
 R4_HIT, R4_OK, R4_MIN, R4_TOP = 0.20, 0.05, 3, 10
 R7_MIN = 20
 OUTER = {"하빈면", "가창면", "검단동", "안심2동", "공산동", "파동"}   # D-018 외곽 6단위
+# KCB는 출장소 행정동을 따로 내지 않고 본 읍에 합쳐 낸다(2026-10-16 4차 반출로 확인: 대응표에만 있는 코드가 이 둘뿐이고,
+# KCB 다사읍 인원이 다사읍+서재출장소 인구와 맞는다). 본 읍 코드가 KCB에 있으면 출장소도 연결된 것으로 본다.
+BRANCH = {"2771025400": "2771025300", "2771025700": "2771025600"}   # 논공읍공단출장소→논공읍, 다사읍서재출장소→다사읍
 SH_CNT = None                                       # 신한 건수 열 이름(현장 F1 확인 후). None이면 CNT·건수가 든 첫 열
 RS = ["R1", "R2", "R3", "R4", "R5", "R6", "R7"]
 STRENGTH = {"R1": "간접", "R2": "보조", "R3": "직접", "R4": "현재 시점", "R5": "간접", "R6": "-", "R7": "간접"}
@@ -188,7 +191,8 @@ if kc is not None:
     rst_lo, rst_hi = a0[C[3:]].sum(axis=1).groupby(k3.unit_id).sum(), a4[C[3:]].sum(axis=1).groupby(k3.unit_id).sum()
     n1_lo = (num_lo / (num_lo + rst_hi)).reindex(u.index)
     n1_hi = (num_hi / (num_hi + rst_lo)).reindex(u.index)
-    unm = (hpop[~hpop.index.isin(set(k3.hcode))].groupby(h2u).sum() / hpop.groupby(h2u).sum()).reindex(u.index).fillna(0)
+    covered = set(k3.hcode) | {c for c, p in BRANCH.items() if p in set(k3.hcode)}
+    unm = (hpop[~hpop.index.isin(covered)].groupby(h2u).sum() / hpop.groupby(h2u).sum()).reindex(u.index).fillna(0)
     n1_lo[unm >= 0.2], n1_hi[unm >= 0.2] = np.nan, np.nan
     v, thr["R1"] = judge(n1_lo, n1_hi, UP, "low")
     R["R1"], R["R1_val"] = to_dong(v), b.unit_id.map((n1_lo + n1_hi) / 2)
@@ -394,10 +398,15 @@ else:
 dg = files["dong_delivery"]
 if dg is not None:
     dg = dg.set_index("dong")
-    canc, mins = (dg.n_cancel / dg.n).reindex(b.index), (dg.mins_sum / dg.mins_n).reindex(b.index)
-    vc, thr["R5c_cancel"] = judge(canc, canc, DP, "high")
+    mins = (dg.mins_sum / dg.mins_n).reindex(b.index)
     vm, thr["R5c_mins"] = judge(mins, mins, DP, "high")
-    vs5 = [vc, vm]
+    vs5 = [vm]
+    if "n_cancel" in dg and dg.n_cancel.notna().any():               # 10/16 반출은 취소 표시 입력 오류로 이 열을 뺀다
+        canc = (dg.n_cancel / dg.n).reindex(b.index)
+        vc, thr["R5c_cancel"] = judge(canc, canc, DP, "high")
+        vs5.insert(0, vc)
+    else:
+        P("\n[R5c] 취소율 없음 → 배달 시간·배달팁으로만 판정")
     if "tip_sum" in dg:                                               # 배달팁 평균(4차 Q7에 추가, 2026-10-15)
         tip = (dg.tip_sum / dg.tip_n).reindex(b.index)
         vt5, thr["R5c_tip"] = judge(tip, tip, DP, "high")

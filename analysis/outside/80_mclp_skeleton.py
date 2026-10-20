@@ -54,6 +54,7 @@ TAUS, TAU_MAIN = [0.05, 0.10, 0.20], 0.10
 FILL = {"Q1": (0, 2), "Q3": (0, 4), "KCB": (0, 4)}   # (가장 불리, 가장 유리) = (0, 억제 문턱 - 1)
 FLOW_MIN = 20          # 집 동의 관측 급식 흐름 합이 이보다 적으면 그 집 동은 닿음 계산에서 뺀다(90의 R7_MIN과 같은 값)
 SAT, D018_COV = 0.99, 0.90
+BRANCH = {"2771025400": "2771025300", "2771025700": "2771025600"}   # KCB는 출장소를 본 읍에 합쳐 낸다(90과 같음, 2026-10-16)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--v4")
@@ -325,7 +326,8 @@ if kc is not None:
     rst_lo, rst_hi = a0[CC[3:]].sum(axis=1).groupby(k3.unit_id).sum(), a4[CC[3:]].sum(axis=1).groupby(k3.unit_id).sum()
     n_lo = (num_lo / (num_lo + rst_hi)).reindex(units.index)
     n_hi = (num_hi / (num_hi + rst_lo)).reindex(units.index)
-    unm = (hpop[~hpop.index.isin(set(k3.hcode))].groupby(h2u).sum() / hpop.groupby(h2u).sum()).reindex(units.index).fillna(0)
+    covered = set(k3.hcode) | {c for c, p in BRANCH.items() if p in set(k3.hcode)}
+    unm = (hpop[~hpop.index.isin(covered)].groupby(h2u).sum() / hpop.groupby(h2u).sum()).reindex(units.index).fillna(0)
     n_lo[unm >= 0.2], n_hi[unm >= 0.2] = np.nan, np.nan
     need["need_lo"], need["need_hi"], need["need_mid"] = n_lo, n_hi, (n_lo + n_hi) / 2
     mid = need.need_mid

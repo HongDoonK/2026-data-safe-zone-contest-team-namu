@@ -122,7 +122,7 @@ doc = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name=
 &nbsp; <span class="ph">빨간 글자</span> 현장에서 F0·F1·K1 결과로 바꿀 값</p>
 <p><b>순서</b>: {" → ".join(toc)}</p>
 <p>{inline(stop)}</p>
-<p><b>3차 노트북(2026_10_02.ipynb)이 남아 있으면</b> M1·M2는 그 셀을 실행한다(15분 절약). <b>Q6을 건너뛰면</b> X1의 <code>[S_CNT]</code>를 <code>["x"]</code>로 바꾼다.</p>
+<p><b>3차 노트북(2026_10_02.ipynb)이 남아 있으면</b> M1·M2는 그 셀을 실행한다(15분 절약). <b>Q7·Q10을 건너뛰면</b> X1은 그 파일 줄을 찍지 않는다(고칠 것 없음).</p>
 <p><b>X1이 "통과"를 찍지 않은 파일은 반출 신청하지 않는다.</b> 최댓값·상위 분위수·개별 계정은 출력하지 않는다(노트북째 반출된다).</p>
 </div>
 <h3>시간이 모자랄 때 (축소 경로)</h3>
