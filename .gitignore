@@ -13,9 +13,11 @@ synthetic/visit3/out_SYNTHETIC/
 
 # 반출 노트북(센터 산출물), 밖 분석의 내부 산출물(억제 전 값 포함), 외부 원자료
 10_2_데이터분석결과물/
+10_16_데이터분석결과물/
 9_18_데이터분석 결과물/
 analysis/outside/out/
 analysis/outside/out_*/
 analysis/outside/fig/
 data_external/
 synthetic/visit4/v4_exports_SYNTHETIC/
+analysis/outside/dashboard/store/
