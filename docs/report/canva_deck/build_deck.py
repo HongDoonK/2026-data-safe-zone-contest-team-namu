@@ -25,7 +25,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 ASSET = HERE / "assets"
 DASH = ROOT / "analysis" / "outside" / "out_dashboard"
-GITHUB = "github.com/________"     # 저장소를 만든 뒤 주소로 바꾼다(전 과정 공개, 팀 결정 2026-10-20)
+GITHUB = "github.com/HongDoonK/2026-data-safe-zone-contest-team-namu"   # 팀 저장소(2026-10-21 공개). 표지·27·30쪽
+GITHUB_LINK = (GITHUB, "https://" + GITHUB)                              # 주소 글자에 거는 하이퍼링크
 
 # 대시보드 자료 속 옛 용어 → 쉬운 이름(용어 풀이). 긴 표현부터 바꾼다
 PLAIN = [("처방 필요 4곳", "개선 대상 4곳"), ("처방 + 확인 필요", "개선 대상 + 확인 필요"),
@@ -193,7 +194,8 @@ def s01(d, sl):
     d.text(sl, 330, 864, 700, 40, "김동훈 · 나선엽 · 이승혁 · 정다현", size=26, color=INK2)
     d.text(sl, 160, 918, 900, 32, "분석 기간 2023-06~2025-06 · 데이터안심구역 방문 4회  |  2026. 10.", size=19,
            color=MUTED)
-    d.text(sl, 160, 952, 900, 32, f"분석 코드·문서·작업 기록 전체 GitHub 공개 · {GITHUB}", size=19, color=MUTED)
+    d.text(sl, 160, 952, 1060, 64, f"분석 코드·문서·작업 기록 전체 GitHub 공개\v{GITHUB}", size=19, color=MUTED, lsp=1.35,
+           link=GITHUB_LINK)
     rows = load("monthly")
     gx, gy, gw, gh = 1290, 300, 470, 470
     d.text(sl, gx, gy - 64, gw, 30, "월별 급식카드 결제 건수", size=20, color=INK, bold=True)
@@ -1217,8 +1219,8 @@ def s27(d, sl):
     hline(d, sl, X0, X1, y + 160)
     kicker(d, sl, X0, y + 184, W, "전 과정 공개")
     d.text(sl, X0, y + 220, W, 70,
-           f"분석 코드 · 센터 입력 코드 · 결정 기록 · 반출 결과 문서 · 작업 기록 전체를 GitHub 저장소에 공개: {GITHUB}",
-           size=19, color=INK, bold=True, lsp=1.35)
+           f"분석 코드 · 센터 입력 코드 · 결정 기록 · 반출 결과 문서 · 작업 기록 전체를 GitHub 저장소에 공개\v{GITHUB}",
+           size=19, color=INK, bold=True, lsp=1.35, link=GITHUB_LINK)
     d.notes(sl, "부록 4. 센터 밖 분석 과정. 반출 집계에서 출발해 인구, 대응표, 진단, 지도·군집, 이웃 점검, 공급 점검, 시나리오, 판정표까지 번호 순서로 이어진다.\n"
                 "집계 표에서 판정·시나리오·지도까지 노트북 PC로 약 1분. 코드와 문서, 작업 기록은 모두 GitHub에 공개.")
 
@@ -1306,8 +1308,8 @@ def s30(d, sl):
         x += w + 60
     y = TOP + ch + 50
     hline(d, sl, X0, X1, y)
-    d.text(sl, X0, y + 24, 760, 32, "재현 자료 · 전 과정 GitHub 공개", size=21, color=INK, bold=True)
-    d.text(sl, X1 - 700, y + 28, 700, 28, GITHUB, size=19, color=AMBER, bold=True, align="r")
+    d.text(sl, X0, y + 24, 600, 32, "재현 자료 · 전 과정 GitHub 공개", size=21, color=INK, bold=True)
+    d.text(sl, X1 - 900, y + 28, 900, 28, GITHUB, size=19, color=AMBER, bold=True, align="r", link=GITHUB_LINK)
     items = [("분석 코드", "analysis/outside/10~98 (Python)"), ("센터 입력 코드", "docs/report/T2_4차_입력코드.html"),
              ("결정 기록", "docs/DECISIONS.md (D-012~D-020)"), ("반출 결과", "docs/topics/T2_export_*_results.md (1~4차)")]
     cw = (W - 3 * 60) / 4

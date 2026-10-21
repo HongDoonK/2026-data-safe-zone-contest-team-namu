@@ -129,9 +129,15 @@ class Deck:
                     r.Font.Color.RGB = rgb(COLOR[fl])
 
     def text(self, sl, x, y, w, h, text, size=22, color=INK, font=BODY_FONT, bold=False, align="l",
-             anchor="t", lsp=1.3, after=0, bullet=False, indent=22, name=None, raw=False):
+             anchor="t", lsp=1.3, after=0, bullet=False, indent=22, name=None, raw=False, link=None):
+        """link = (글자 안의 표시 문자열, 주소): 그 부분에 하이퍼링크(PDF에서도 눌림). 색은 테마 링크색(THEME 11번)."""
         s = sl.Shapes.AddTextbox(1, x * PX, y * PX, w * PX, h * PX)
         self._fill_text(s, text, size, color, font, bold, align, anchor, lsp, after, bullet, indent, raw)
+        if link:
+            sub, url = link
+            i = s.TextFrame2.TextRange.Text.find(sub)
+            if i >= 0:
+                s.TextFrame.TextRange.Characters(i + 1, len(sub)).ActionSettings(1).Hyperlink.Address = url
         if name:
             s.Name = name
         return s
