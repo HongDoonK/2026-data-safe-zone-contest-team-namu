@@ -21,3 +21,8 @@ analysis/outside/fig/
 data_external/
 synthetic/visit4/v4_exports_SYNTHETIC/
 analysis/outside/dashboard/store/
+
+# 개인정보 문서(대회 개인정보 수집·이용 동의서): 저장소에 올리지 않는다
+경진대회_개인정보_수집이용_동의서.pdf
+# 오피스 잠금 파일
+~$*
